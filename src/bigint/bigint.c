@@ -29,6 +29,10 @@ void inicializar(big_int *bigInt, size_t nmemb) {
 	bigInt->nmemb = nmemb;
 }
 
+void setZero(big_int *bigInt) {
+	memset(bigInt->array, 0, bigInt->nmemb*SIZE_INT);
+}
+
 void inicializarExt(big_int_ext *bigInt, size_t nmemb) {
 	if (nmemb == 0) {
 		fprintf(stderr, "Tamanho deve ser maior que zero!\n");
@@ -244,5 +248,94 @@ void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 
 	copiarExt(resultado, &temp);
 	freeInt((big_int*)&temp);
+
+}
+
+void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
+	big_int temp, tempBin, tempR, tempR2, tempR3;
+	size_t tamanho;
+	int_usado *dividendo, *divisor;
+
+
+	tamanho = int1->nmemb;
+
+	inicializar(&temp, tamanho);
+	inicializar(&tempBin, tamanho);
+	inicializar(&tempR, tamanho);
+	inicializar(&tempR2, tamanho);
+	inicializar(&tempR3, tamanho);
+
+
+	dividendo = int1->array;
+	divisor = int2->array;
+
+	for (size_t i = tamanho - 1; i >= 0; i--) {
+		temp.array[0] = dividendo[i];
+		
+		if (compara(&temp, int2) >= IGUAL) {  // Se for maior ou igual
+			setZero(&tempBin);
+			incrementar1(&tempBin);  // tempBin = 1
+
+			copiar(&tempR, int2);  // tempR = divisor
+			while (compara(&tempR, &temp) == MENOR) {  // Enquanto for menor, dobra o tempBin
+				dobrar(&tempR);
+				dobrar(&tempBin);
+			}
+			// Passou, volta 1 iteração
+			metade(&tempR);
+			metade(&tempBin);
+
+			/*copiar(&tempR2, &tempR);  // tempR2 = tempR
+			metade(&tempR2);  // tempR2 /= 2
+
+			somar(&tempR, &tempR2, &tempR3);*/
+
+		}
+		else {
+			shiftLeft(&temp);
+		}
+
+	}
+
+}
+
+comparacao compara(big_int *int1, big_int *int2) {
+	for (size_t i = int1->nmemb - 1; i >= 0; i--) {
+		if (int1->array[i] > int2->array[i]) {
+			return MAIOR;
+		} else if (int1->array[i] < int2->array[i]) {
+			return MENOR;
+		}
+	}
+	return IGUAL;
+}
+
+void shiftLeft(big_int *bigInt) {
+	for(size_t i = bigInt->nmemb - 2; i >= 0; i--) {
+		bigInt->array[i + 1] = bigInt->array[i];
+	}
+	bigInt->array[0] = 0;
+}
+
+void dobrar(big_int *bigInt) {
+	int_usado ultimo, temp;
+
+	ultimo = 0;
+	for(size_t i = 0; i < bigInt->nmemb; i++) {
+		temp = (bigInt->array[i] & 0x80000000) >> 31;
+		bigInt->array[i] = (bigInt->array[i] << 1) + ultimo;
+		ultimo = temp;
+	}
+}
+
+void metade(big_int*bigInt) {
+	int_usado primeiro, temp;
+
+	primeiro = 0;
+	for(size_t i = bigInt->nmemb - 1; i >= 0; i--) {
+		temp = (bigInt->array[i] & 0x00000001) << 31;
+		bigInt->array[i] = (bigInt->array[i] >> 1) + primeiro;
+		primeiro = temp;
+	}
 
 }

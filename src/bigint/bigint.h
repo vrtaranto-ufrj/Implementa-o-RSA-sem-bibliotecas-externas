@@ -13,7 +13,14 @@ typedef struct {
 
 } big_int;
 
+typedef enum {
+	MENOR = -1,
+	IGUAL = 0,
+	MAIOR = 1
+} comparacao;
+
 void inicializar(big_int *bigInt, size_t nmemb);
+void setZero(big_int *bigInt);
 void freeInt(big_int *bigInt);
 void atribuirValor(int_usado inteiro, big_int *bigInt, size_t pos);
 void printIntHexa(big_int *bigInt);
@@ -27,4 +34,8 @@ void complemento2(big_int *bigInt);
 void somar(big_int *int1, big_int *int2, big_int *resultado);
 void subtrair(big_int *int1, big_int *int2, big_int *resultado);
 void multiplicar(big_int *int1, big_int *int2, big_int *resultado);
-//void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto);
+void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto);
+comparacao compara(big_int *int1, big_int *int2);
+void shiftLeft(big_int *bigInt);
+void dobrar(big_int *bigInt);
+void metade(big_int*bigInt);
