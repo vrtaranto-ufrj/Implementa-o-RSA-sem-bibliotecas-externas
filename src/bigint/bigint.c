@@ -138,6 +138,14 @@ bool eZero(big_int *bigInt) {
 	return true;
 }
 
+bool eUm(big_int *bigInt) {
+	if (bigInt->array[0] != 1) return false;
+	for (size_t i = 1; i < bigInt->nmemb; i++) {
+		if (bigInt->array[i] != 0) return false;
+	}
+	return true;
+}
+
 void inverter(big_int *bigInt) {
 	for (size_t i = 0; i < bigInt->nmemb; i++) {
 		bigInt->array[i] = ~bigInt->array[i];
@@ -211,7 +219,6 @@ void multiplicarSomando(big_int *int1, big_int *int2, big_int *resultado) {
 	freeInt(&contador);	
 }
 
-
 void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, size_t pos_int2) {
 	int_usado *a, *b, carry;
 	uint64_t *r;
@@ -252,67 +259,145 @@ void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 }
 
 void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
-	big_int temp, tempBin, tempR, tempR2, tempR3;
+	big_int temp, inferior, superior, meio, offset, valorInit, valorOffset, valorMeio, tempR3;
 	size_t tamanho;
 	int_usado *dividendo, *divisor;
+	comparacao comp;
 
 
 	tamanho = int1->nmemb;
 
 	inicializar(&temp, tamanho);
-	inicializar(&tempBin, tamanho);
-	inicializar(&tempR, tamanho);
-	inicializar(&tempR2, tamanho);
+	inicializar(&superior, tamanho);
+	inicializar(&inferior, tamanho);
+	inicializar(&meio, tamanho);
+	inicializar(&offset, tamanho);
+	inicializar(&valorInit, tamanho);
+	inicializar(&valorOffset, tamanho);
+	inicializar(&valorMeio, tamanho);
 	inicializar(&tempR3, tamanho);
 
 
 	dividendo = int1->array;
 	divisor = int2->array;
 
-	for (size_t i = tamanho - 1; i >= 0; i--) {
+	for (size_t i = tamanho - 1;; i--) {
 		temp.array[0] = dividendo[i];
+		printf("temp = ");
+		printIntHexa(&temp);
+		printf("\n");
 		
 		if (compara(&temp, int2) >= IGUAL) {  // Se for maior ou igual
-			setZero(&tempBin);
-			incrementar1(&tempBin);  // tempBin = 1
+			
+			setZero(&superior);
+			atribuirValor(1, &superior, 0);  // superior = 1
 
-			copiar(&tempR, int2);  // tempR = divisor
-			while (compara(&tempR, &temp) == MENOR) {  // Enquanto for menor, dobra o tempBin
-				dobrar(&tempR);
-				dobrar(&tempBin);
+			copiar(&valorInit, int2);  // valorInit = divisor * 2^0
+			while (compara(&valorInit, &temp) == MENOR) {  // Enquanto for menor, dobra o superior
+				dobrar(&valorInit);
+				dobrar(&superior);				
 			}
 			// Passou, volta 1 iteração
-			metade(&tempR);
-			metade(&tempBin);
+			// valorInit /= 2
+			metade(&valorInit);
 
-			/*copiar(&tempR2, &tempR);  // tempR2 = tempR
-			metade(&tempR2);  // tempR2 /= 2
+			// inferior = superior / 2
+			copiar(&inferior, &superior);
+			metade(&inferior);             
 
-			somar(&tempR, &tempR2, &tempR3);*/
+			// valorOffset = valorInit / 2
+			copiar(&valorOffset, &valorInit);
+			metade(&valorOffset);
+
+			// valorMeio = valorInit + valorOffset
+			somar(&temp, &valorOffset, &valorMeio);
+
+			// offset = inferior / 2
+			copiar(&offset, &inferior);
+			metade(&offset);
+
+			printf("valorInit = ");
+			printIntHexa(&valorInit);
+			printf("\t");
+
+			printf("superior = ");
+			printIntHexa(&superior);
+			printf("\t");
+
+			printf("inferor = ");
+			printIntHexa(&inferior);
+			printf("\n");
+			while (1) {
+				// meio = inferior + offset
+				somar(&inferior, &offset, &meio);
+				printf("meio = ");
+				printIntHexa(&meio);
+				printf("\t");
+
+				printf("offset = ");
+				printIntHexa(&offset);
+				printf("\n");
+				
+
+				if (eZero(&offset)) {  // Se o offset for 1, quer dizer que ele chegou
+					shiftLeft(resultado);
+					somar(resultado, &meio, resultado);
+
+					printf("temp = ");
+					printIntHexa(&temp);
+					printf("\t");
+
+					printf("valorMeio = ");
+					printIntHexa(&valorMeio);
+					printf("\n");
+					subtrair(&temp, &valorMeio, &temp);
+					break;
+				}
+				comp = compara(&valorMeio, &temp);
+				if (comp == MENOR) {
+					metade(&offset);
+					metade(&valorOffset);
+				} else if (comp == MAIOR) {
+					dobrar(&offset);
+					dobrar(&valorOffset);
+				} else {  // Se for IGUAL, quer dizer que ele chegou
+					shiftLeft(resultado);
+					somar(resultado, &meio, resultado);
+					subtrair(&temp, &valorMeio, &temp);
+					break;
+				}
+			}
+
+			/*copiar(&valorOffset, &valorInit);  // valorOffset = valorInit
+			metade(&valorOffset);  // valorOffset /= 2
+
+			somar(&valorInit, &valorOffset, &tempR3);*/
 
 		}
 		else {
+			if (i == 0) break;
 			shiftLeft(&temp);
 		}
-
 	}
-
+	copiar(resto, &temp);
 }
 
 comparacao compara(big_int *int1, big_int *int2) {
-	for (size_t i = int1->nmemb - 1; i >= 0; i--) {
+	for (size_t i = int1->nmemb - 1;; i--) {
 		if (int1->array[i] > int2->array[i]) {
 			return MAIOR;
 		} else if (int1->array[i] < int2->array[i]) {
 			return MENOR;
 		}
+		if (i == 0) break;
 	}
 	return IGUAL;
 }
 
 void shiftLeft(big_int *bigInt) {
-	for(size_t i = bigInt->nmemb - 2; i >= 0; i--) {
+	for(size_t i = bigInt->nmemb - 2;; i--) {
 		bigInt->array[i + 1] = bigInt->array[i];
+		if (i == 0) break;
 	}
 	bigInt->array[0] = 0;
 }
@@ -332,10 +417,11 @@ void metade(big_int*bigInt) {
 	int_usado primeiro, temp;
 
 	primeiro = 0;
-	for(size_t i = bigInt->nmemb - 1; i >= 0; i--) {
+	for(size_t i = bigInt->nmemb - 1;; i--) {
 		temp = (bigInt->array[i] & 0x00000001) << 31;
 		bigInt->array[i] = (bigInt->array[i] >> 1) + primeiro;
 		primeiro = temp;
+		if (i == 0) break;
 	}
 
 }

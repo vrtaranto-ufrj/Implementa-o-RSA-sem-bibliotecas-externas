@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define BITS 4096
+#define BITS 64
 #define NUM_INTS 3
 
 #define NMEMB BITS/(SIZE_INT*8)
@@ -45,10 +45,15 @@ int main(void) {
 	//decrementar1(&int1);
 	//somar(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//subtrair(&inteiros[0], &inteiros[1], &inteiros[2]);
-	multiplicar(&inteiros[0], &inteiros[1], &inteiros[2]);
+	//multiplicar(&inteiros[0], &inteiros[1], &inteiros[2]);
+	dividir(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
 	
 	printf("resultado = ");
 	printIntHexa(&inteiros[2]);
+	printf("\n");
+
+	printf("resto = ");
+	printIntHexa(&inteiros[0]);
 	printf("\n");
 
 	

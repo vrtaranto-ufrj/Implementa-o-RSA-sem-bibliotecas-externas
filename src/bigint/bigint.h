@@ -29,6 +29,7 @@ void incrementar1(big_int *bigInt);
 void decrementar1(big_int *bigInt);
 size_t checaTamanho(big_int *int1, big_int *int2, big_int *int3);
 bool eZero(big_int *bigInt);
+bool eUm(big_int *bigInt);
 void inverter(big_int *bigInt);
 void complemento2(big_int *bigInt);
 void somar(big_int *int1, big_int *int2, big_int *resultado);
