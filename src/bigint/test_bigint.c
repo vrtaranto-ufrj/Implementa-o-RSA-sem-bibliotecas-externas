@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define BITS 256
+#define BITS 4096
 #define NUM_INTS 3
 
 #define NMEMB BITS/(SIZE_INT*8)
@@ -23,7 +23,7 @@ int main(void) {
 				if (i == 0) {
 					atribuirValor(rand(), &inteiros[i], j);
 				} else {
-					atribuirValor(rand(), &inteiros[i], j);
+					atribuirValor(0, &inteiros[i], j);
 				}
 				
 			} else {
@@ -55,8 +55,8 @@ int main(void) {
 	//decrementar1(&int1);
 	//somar(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//subtrair(&inteiros[0], &inteiros[1], &inteiros[2]);
-	multiplicar(&inteiros[0], &inteiros[1], &inteiros[2]);
-	//dividir(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
+	//multiplicar(&inteiros[0], &inteiros[1], &inteiros[2]);
+	dividir(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
 	//bsearchDiv(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
 	
 	printf("resultado = ");

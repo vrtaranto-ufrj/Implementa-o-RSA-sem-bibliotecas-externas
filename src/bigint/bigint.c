@@ -254,16 +254,6 @@ void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, si
 void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 	big_int_ext temp;
 	size_t tamanho;
-	printf("Entrou!\n");
-	printf("int1 = ");
-	printIntHexa(int1);
-	printf("\t");
-	printf("int2 = ");
-	printIntHexa(int2);
-	printf("\t");
-	printf("resultado = ");
-	printIntHexa(resultado);
-	printf("\n");
 
 	tamanho = int1->nmemb;
 
@@ -276,17 +266,6 @@ void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 
 	copiarExt(resultado, &temp);
 	freeInt((big_int*)&temp);
-	printf("Saiu!\n");
-	printf("int1 = ");
-	printIntHexa(int1);
-	printf("\t");
-	printf("int2 = ");
-	printIntHexa(int2);
-	printf("\t");
-	printf("resultado = ");
-	printIntHexa(resultado);
-	printf("\n");
-
 }
 
 void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
@@ -306,38 +285,11 @@ void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
 
 	for (size_t i = tamanho - 1;; i--) {
 		atribuirValor(dividendo[i], &temp, 0);
-		printf("temp = ");
-		printIntHexa(&temp);
-		printf("\n");
-		printf("i = %zu\n", i);
-		//if (!eZero(&temp)) return;
 		
-		printf("comparacao = %d\n", compara(&temp, int2));
 		if (compara(&temp, int2) >= IGUAL) {  // Se for maior ou igual
-			printf("MAIOR\n");
 			shiftLeft(&tempResultado);
 
-			printf("target = ");
-			printIntHexa(&temp);
-			printf("\t");
-			printf("divisor = ");
-			printIntHexa(int2);
-			printf("\t");
-			printf("tempResultado = ");
-			printIntHexa(&tempResultado);
-			printf("\t");
-			printf("respostaBsearch = ");
-			printIntHexa(&respostaBsearch);
-			printf("\n");
-
 			bsearchDiv(&temp, int2, &tempResultado, &respostaBsearch);
-
-			printf("tempResultado = ");
-			printIntHexa(&tempResultado);
-			printf("\t");
-			printf("respostaBsearch = ");
-			printIntHexa(&respostaBsearch);
-			printf("\n");
 
 			subtrair(&temp, &respostaBsearch, &temp);
 		}
@@ -346,6 +298,9 @@ void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
 	}
 	copiar(resultado, &tempResultado);
 	copiar(resto, &temp);
+	freeInt(&temp);
+	freeInt(&tempResultado);
+	freeInt(&respostaBsearch);
 }
 
 comparacao compara(big_int *int1, big_int *int2) {
@@ -394,7 +349,6 @@ void metade(big_int*bigInt) {
 
 void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resultado) {
 	big_int valorMul, right, left, mid;
-	//int_usado right, left, mid;
 	size_t tamanho;
 	comparacao c, left_comparado_right;
 
@@ -416,7 +370,7 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 	
 	if (c == IGUAL) {
 		copiar(resultado, &valorMul);
-		copiar(index, &right);
+		somar(index, &right, index);
 		freeInt(&mid);
 		freeInt(&valorMul);
 		freeInt(&left);
@@ -429,7 +383,6 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 	copiar(&left, &right);
 	metade(&left);
 
-	int i = 0;
 	left_comparado_right = compara(&left, &right);
 	while (left_comparado_right <= IGUAL) {
 
@@ -442,32 +395,11 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 		somar(&right, &left, &mid);
 		metade(&mid);
 
-		if (++i < 40)
-			{printf("left = ");
-			printIntHexa(&left);
-			printf("\t");
-			printf("right = ");
-			printIntHexa(&right);
-			printf("\t");
-			printf("mid = ");
-			printIntHexa(&mid);
-			printf("\n");}
-
-
 		multiplicar(divisor, &mid, &valorMul);
-
-		if (i < 40)
-			{
-			printf("valorMul = ");
-			printIntHexa(&valorMul);
-			printf("\t");
-			printf("target = ");
-			printIntHexa(target);
-			printf("\n");}
 
 		c = compara(&valorMul, target);
 		if (c == IGUAL) {
-			copiar(index, &mid);
+			somar(index, &mid, index);
 			copiar(resultado, &valorMul);
 
 			freeInt(&mid);
@@ -476,13 +408,11 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 			freeInt(&right);
 			return;
 		} else if (c == MENOR) {
-			if (i < 40)printf("Menor!\n");
 			//left = mid + 1;
 			incrementar1(&mid);
 			copiar(&left, &mid);
 			
 		} else {
-			if (i < 40)printf("Maior!\n");
 			//right = mid - 1;
 			decrementar1(&mid);
 			copiar(&right, &mid);
@@ -490,8 +420,8 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 		}
 		left_comparado_right = compara(&left, &right);
 	}
-	copiar(index, &right);
-	multiplicar(divisor, index, resultado);
+	somar(index, &right, index);
+	multiplicar(divisor, &right, resultado);
 	freeInt(&mid);
 	freeInt(&valorMul);
 	freeInt(&left);
