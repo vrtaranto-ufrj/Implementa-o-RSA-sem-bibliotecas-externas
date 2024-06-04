@@ -427,3 +427,19 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 	freeInt(&left);
 	freeInt(&right);
 }
+
+void potencia(big_int *base, int_usado expoente, big_int *resultado) {
+	big_int temp;
+	size_t tamanho;
+
+	tamanho = base->nmemb;
+
+	inicializar(&temp, tamanho);
+	atribuirValor(1, &temp, 0);  // temp = 1
+
+	for(int_usado i = 0; i < expoente; i++) {
+		multiplicar(base, &temp, &temp);
+	}
+	copiar(resultado, &temp);
+	freeInt(&temp);
+}

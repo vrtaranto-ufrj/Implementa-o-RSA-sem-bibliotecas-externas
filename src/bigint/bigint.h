@@ -41,3 +41,4 @@ void shiftLeft(big_int *bigInt);
 void dobrar(big_int *bigInt);
 void metade(big_int*bigInt);
 void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resultado);
+void potencia(big_int *base, int_usado expoente, big_int *resultado);
