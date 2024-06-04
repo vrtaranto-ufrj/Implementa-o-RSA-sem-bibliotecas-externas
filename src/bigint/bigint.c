@@ -285,7 +285,7 @@ void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
 
 	for (size_t i = tamanho - 1;; i--) {
 		atribuirValor(dividendo[i], &temp, 0);
-		
+
 		if (compara(&temp, int2) >= IGUAL) {  // Se for maior ou igual
 			shiftLeft(&tempResultado);
 
@@ -387,13 +387,13 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 	while (left_comparado_right <= IGUAL) {
 
 		//mid = left + (right - left) / 2;
-		//subtrair(&right, &left, &mid);
-		//metade(&mid);
-		//somar(&left, &mid, &mid);
+		subtrair(&right, &left, &mid);
+		metade(&mid);
+		somar(&left, &mid, &mid);
 
 		// mid = (right + left) / 2;
-		somar(&right, &left, &mid);
-		metade(&mid);
+		//somar(&right, &left, &mid);
+		//metade(&mid);
 
 		multiplicar(divisor, &mid, &valorMul);
 
