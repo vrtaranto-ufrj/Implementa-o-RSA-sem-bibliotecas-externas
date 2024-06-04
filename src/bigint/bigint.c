@@ -244,7 +244,7 @@ void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, si
 
 	for (size_t i = 0; i < int1->nmemb/2; i++) {
 		r[pos_int2+i] += (uint64_t) a[i] * (uint64_t) b[pos_int2] + carry;
-		carry = r[pos_int2+i] >> 32;
+		carry = r[pos_int2+i] >> 32;  //  carry = os ultimos 32 bits do r
 		r[pos_int2+i] = r[pos_int2+i]  & 0x00000000ffffffff;  // Limpar os primeiros 32bits
 	}
 	r[pos_int2+int1->nmemb/2] += carry;
