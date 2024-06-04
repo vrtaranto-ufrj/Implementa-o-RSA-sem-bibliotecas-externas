@@ -21,3 +21,37 @@ uint64_t powMod(uint64_t base, uint64_t expoente, uint64_t modulo) {
 
 	return resultado % modulo;
 }
+
+void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *resposta) {
+	big_int atual, resultado, n, auxiliar;
+	size_t tamanho = base->nmemb;
+
+	inicializar(&atual, tamanho);
+	inicializar(&resultado, tamanho);
+	inicializar(&n, tamanho);
+	inicializar(&auxiliar, tamanho);
+	
+
+	dividir(base, modulo, &auxiliar, &atual);  // atual = base % modulo;
+
+	atribuirValor(1, &resultado, 0);  // resultado = 1;
+
+	copiar(&n, expoente);  // n = expoente;
+
+	while (!eZero(&n)) {
+
+		if (n.array[0] & 1) {
+			multiplicar(&resultado, &atual, &auxiliar);
+			dividir(&auxiliar, modulo, &auxiliar, &resultado);
+		}
+		multiplicar(&atual, &atual, &auxiliar);
+		dividir(&auxiliar, modulo, &auxiliar, &atual);
+		metade(&n);
+	}
+	dividir(&resultado, modulo, &auxiliar, resposta);
+
+	freeInt(&atual);
+	freeInt(&resultado);
+	freeInt(&n);
+	freeInt(&auxiliar);
+}
