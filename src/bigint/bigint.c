@@ -443,3 +443,38 @@ void potencia(big_int *base, int_usado expoente, big_int *resultado) {
 	copiar(resultado, &temp);
 	freeInt(&temp);
 }
+
+void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *resposta) {
+	big_int atual, resultado, n, auxiliar;
+	size_t tamanho = base->nmemb;
+
+	inicializar(&atual, tamanho);
+	inicializar(&resultado, tamanho);
+	inicializar(&n, tamanho);
+	inicializar(&auxiliar, tamanho);
+	
+
+	dividir(base, modulo, &auxiliar, &atual);  // atual = base % modulo;
+
+	atribuirValor(1, &resultado, 0);  // resultado = 1;
+
+	copiar(&n, expoente);  // n = expoente;
+
+	while (!eZero(&n)) {
+		if (n.array[0] & 1) {
+			multiplicar(&resultado, &atual, &auxiliar);
+			dividir(&auxiliar, modulo, &auxiliar, &resultado);
+		}
+		multiplicar(&atual, &atual, &auxiliar);
+		dividir(&auxiliar, modulo, &auxiliar, &atual);
+		metade(&n);
+
+	}
+	
+	dividir(&resultado, modulo, &auxiliar, resposta);
+
+	freeInt(&atual);
+	freeInt(&resultado);
+	freeInt(&n);
+	freeInt(&auxiliar);
+}

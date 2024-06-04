@@ -22,7 +22,7 @@ $(BIN): $(OBJ)
 test: $(TESTBIN)
 
 a:
-	gcc -Wall -Wextra -pg -O3 ./src/bigint/bigint.c ./src/pki/modarit.c ./src/pki/teste.c -o test
+	gcc -Wall -Wextra -pg -O3 ./src/bigint/bigint.c ./src/rsa/rsa.c ./src/rsa/test.c -o test
 
 
 $(TESTBIN): $(TESTSRC) $(SRC)

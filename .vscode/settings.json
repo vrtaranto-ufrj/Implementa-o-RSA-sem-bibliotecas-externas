@@ -1,6 +1,11 @@
 {
     "files.associations": {
         "bigint.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "rsa.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c",
+        "stdbool.h": "c",
+        "types.h": "c"
     }
 }
