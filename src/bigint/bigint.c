@@ -233,8 +233,8 @@ void multiplicarSomando(big_int *int1, big_int *int2, big_int *resultado) {
 }
 
 void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, size_t pos_int2) {
-	int_usado *a, *b, carry;
-	uint64_t *r;
+	int_usado *a, *b;
+	uint64_t *r, carry;
 
 
 	a = int1->array;
@@ -244,10 +244,8 @@ void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, si
 
 	for (size_t i = 0; i < int1->nmemb/2; i++) {
 		r[pos_int2+i] += (uint64_t) a[i] * (uint64_t) b[pos_int2] + carry;
-		//printf("r[%zu] = %016" PRIx64 "\n", i, r[pos_int2+i]);
-		//carry = r[pos_int2+i] & 0xffffffff00000000;
 		carry = r[pos_int2+i] >> 32;
-		//printf("carry = %u\n", carry);
+		r[pos_int2+i] = r[pos_int2+i]  & 0x00000000ffffffff;  // Limpar os primeiros 32bits
 	}
 	r[pos_int2+int1->nmemb/2] += carry;
 
@@ -264,7 +262,7 @@ void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 	printIntHexa(int2);
 	printf("\t");
 	printf("resultado = ");
-	printIntHexa(int2);
+	printIntHexa(resultado);
 	printf("\n");
 
 	tamanho = int1->nmemb;

@@ -23,7 +23,7 @@ int main(void) {
 				if (i == 0) {
 					atribuirValor(rand(), &inteiros[i], j);
 				} else {
-					atribuirValor(0, &inteiros[i], j);
+					atribuirValor(rand(), &inteiros[i], j);
 				}
 				
 			} else {
