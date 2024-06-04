@@ -40,3 +40,4 @@ comparacao compara(big_int *int1, big_int *int2);
 void shiftLeft(big_int *bigInt);
 void dobrar(big_int *bigInt);
 void metade(big_int*bigInt);
+void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resultado);

@@ -157,18 +157,23 @@ void complemento2(big_int *bigInt) {
 	incrementar1(bigInt);
 }
 
-void somar(big_int *int1, big_int *int2, big_int *resultado) {
+void somar(big_int *int1, big_int *int2, big_int *resultado) { // esquisito o comportamento do builtin. migrar para o mesmo algoritmo de big_int_ext da multiplicao
 	size_t tamanho;
 	int_usado *a, *b, *r, c_in;
-	big_int temp;
+	big_int temp, tempA, tempB;
 	
 	tamanho = int1->nmemb;
 	//tamanho = checaTamanho(int1, int2, resultado);
 
 	inicializar(&temp, tamanho);
+	inicializar(&tempA, tamanho);
+	inicializar(&tempB, tamanho);
+
+	copiar(&tempA, int1);
+	copiar(&tempB, int2);
 	
-	a = int1->array;
-	b = int2->array;
+	a = tempA.array;
+	b = tempB.array;
 	r = temp.array;
 	c_in = 0;
 	
@@ -187,14 +192,22 @@ void somar(big_int *int1, big_int *int2, big_int *resultado) {
 	}
 	copiar(resultado, &temp);
 	freeInt(&temp);
+	freeInt(&tempA);
+	freeInt(&tempB);
 }
 
 void subtrair(big_int *int1, big_int *int2, big_int *resultado) {
 	//checaTamanho(int1, int2, resultado);
+	big_int temp;
 
-	complemento2(int2);
+	inicializar(&temp, int1->nmemb);
+	copiar(&temp, int2);
 
-	somar(int1, int2, resultado);
+	complemento2(&temp);
+
+	somar(int1, &temp, resultado);
+
+	freeInt(&temp);
 }
 
 void multiplicarSomando(big_int *int1, big_int *int2, big_int *resultado) {
@@ -243,6 +256,16 @@ void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, si
 void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 	big_int_ext temp;
 	size_t tamanho;
+	printf("Entrou!\n");
+	printf("int1 = ");
+	printIntHexa(int1);
+	printf("\t");
+	printf("int2 = ");
+	printIntHexa(int2);
+	printf("\t");
+	printf("resultado = ");
+	printIntHexa(int2);
+	printf("\n");
 
 	tamanho = int1->nmemb;
 
@@ -255,130 +278,75 @@ void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 
 	copiarExt(resultado, &temp);
 	freeInt((big_int*)&temp);
+	printf("Saiu!\n");
+	printf("int1 = ");
+	printIntHexa(int1);
+	printf("\t");
+	printf("int2 = ");
+	printIntHexa(int2);
+	printf("\t");
+	printf("resultado = ");
+	printIntHexa(resultado);
+	printf("\n");
 
 }
 
 void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
-	big_int temp, inferior, superior, meio, offset, valorInit, valorOffset, valorMeio, tempR3;
+	big_int temp, respostaBsearch, tempResultado;
 	size_t tamanho;
-	int_usado *dividendo, *divisor;
-	comparacao comp;
-
+	int_usado *dividendo;
 
 	tamanho = int1->nmemb;
 
 	inicializar(&temp, tamanho);
-	inicializar(&superior, tamanho);
-	inicializar(&inferior, tamanho);
-	inicializar(&meio, tamanho);
-	inicializar(&offset, tamanho);
-	inicializar(&valorInit, tamanho);
-	inicializar(&valorOffset, tamanho);
-	inicializar(&valorMeio, tamanho);
-	inicializar(&tempR3, tamanho);
+	inicializar(&respostaBsearch, tamanho);
+	inicializar(&tempResultado, tamanho);
 
 
 	dividendo = int1->array;
-	divisor = int2->array;
+
 
 	for (size_t i = tamanho - 1;; i--) {
-		temp.array[0] = dividendo[i];
+		atribuirValor(dividendo[i], &temp, 0);
 		printf("temp = ");
 		printIntHexa(&temp);
 		printf("\n");
+		printf("i = %zu\n", i);
+		//if (!eZero(&temp)) return;
 		
+		printf("comparacao = %d\n", compara(&temp, int2));
 		if (compara(&temp, int2) >= IGUAL) {  // Se for maior ou igual
-			
-			setZero(&superior);
-			atribuirValor(1, &superior, 0);  // superior = 1
+			printf("MAIOR\n");
+			shiftLeft(&tempResultado);
 
-			copiar(&valorInit, int2);  // valorInit = divisor * 2^0
-			while (compara(&valorInit, &temp) == MENOR) {  // Enquanto for menor, dobra o superior
-				dobrar(&valorInit);
-				dobrar(&superior);				
-			}
-			// Passou, volta 1 iteração
-			// valorInit /= 2
-			metade(&valorInit);
-
-			// inferior = superior / 2
-			copiar(&inferior, &superior);
-			metade(&inferior);             
-
-			// valorOffset = valorInit / 2
-			copiar(&valorOffset, &valorInit);
-			metade(&valorOffset);
-
-			// valorMeio = valorInit + valorOffset
-			somar(&temp, &valorOffset, &valorMeio);
-
-			// offset = inferior / 2
-			copiar(&offset, &inferior);
-			metade(&offset);
-
-			printf("valorInit = ");
-			printIntHexa(&valorInit);
+			printf("target = ");
+			printIntHexa(&temp);
 			printf("\t");
-
-			printf("superior = ");
-			printIntHexa(&superior);
+			printf("divisor = ");
+			printIntHexa(int2);
 			printf("\t");
-
-			printf("inferor = ");
-			printIntHexa(&inferior);
+			printf("tempResultado = ");
+			printIntHexa(&tempResultado);
+			printf("\t");
+			printf("respostaBsearch = ");
+			printIntHexa(&respostaBsearch);
 			printf("\n");
-			while (1) {
-				// meio = inferior + offset
-				somar(&inferior, &offset, &meio);
-				printf("meio = ");
-				printIntHexa(&meio);
-				printf("\t");
 
-				printf("offset = ");
-				printIntHexa(&offset);
-				printf("\n");
-				
+			bsearchDiv(&temp, int2, &tempResultado, &respostaBsearch);
 
-				if (eZero(&offset)) {  // Se o offset for 1, quer dizer que ele chegou
-					shiftLeft(resultado);
-					somar(resultado, &meio, resultado);
+			printf("tempResultado = ");
+			printIntHexa(&tempResultado);
+			printf("\t");
+			printf("respostaBsearch = ");
+			printIntHexa(&respostaBsearch);
+			printf("\n");
 
-					printf("temp = ");
-					printIntHexa(&temp);
-					printf("\t");
-
-					printf("valorMeio = ");
-					printIntHexa(&valorMeio);
-					printf("\n");
-					subtrair(&temp, &valorMeio, &temp);
-					break;
-				}
-				comp = compara(&valorMeio, &temp);
-				if (comp == MENOR) {
-					metade(&offset);
-					metade(&valorOffset);
-				} else if (comp == MAIOR) {
-					dobrar(&offset);
-					dobrar(&valorOffset);
-				} else {  // Se for IGUAL, quer dizer que ele chegou
-					shiftLeft(resultado);
-					somar(resultado, &meio, resultado);
-					subtrair(&temp, &valorMeio, &temp);
-					break;
-				}
-			}
-
-			/*copiar(&valorOffset, &valorInit);  // valorOffset = valorInit
-			metade(&valorOffset);  // valorOffset /= 2
-
-			somar(&valorInit, &valorOffset, &tempR3);*/
-
+			subtrair(&temp, &respostaBsearch, &temp);
 		}
-		else {
-			if (i == 0) break;
-			shiftLeft(&temp);
-		}
+		if (i == 0) break;
+		shiftLeft(&temp);
 	}
+	copiar(resultado, &tempResultado);
 	copiar(resto, &temp);
 }
 
@@ -424,4 +392,110 @@ void metade(big_int*bigInt) {
 		if (i == 0) break;
 	}
 
+}
+
+void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resultado) {
+	big_int valorMul, right, left, mid;
+	//int_usado right, left, mid;
+	size_t tamanho;
+	comparacao c, left_comparado_right;
+
+	tamanho = divisor->nmemb;
+	inicializar(&valorMul, tamanho);
+	inicializar(&right, tamanho);
+	inicializar(&left, tamanho);
+	inicializar(&mid, tamanho);
+
+	atribuirValor(1, &right, 0);  //right = 1;
+	
+	copiar(&valorMul, divisor);
+	c = compara(&valorMul, target);
+	while (c == MENOR) {
+		dobrar(&right);  //right *= 2;
+		dobrar(&valorMul);
+		c = compara(&valorMul, target);
+	}
+	
+	if (c == IGUAL) {
+		copiar(resultado, &valorMul);
+		copiar(index, &right);
+		freeInt(&mid);
+		freeInt(&valorMul);
+		freeInt(&left);
+		freeInt(&right);
+		
+		return;
+	}
+	
+	// left = right / 2;
+	copiar(&left, &right);
+	metade(&left);
+
+	int i = 0;
+	left_comparado_right = compara(&left, &right);
+	while (left_comparado_right <= IGUAL) {
+
+		//mid = left + (right - left) / 2;
+		//subtrair(&right, &left, &mid);
+		//metade(&mid);
+		//somar(&left, &mid, &mid);
+
+		// mid = (right + left) / 2;
+		somar(&right, &left, &mid);
+		metade(&mid);
+
+		if (++i < 40)
+			{printf("left = ");
+			printIntHexa(&left);
+			printf("\t");
+			printf("right = ");
+			printIntHexa(&right);
+			printf("\t");
+			printf("mid = ");
+			printIntHexa(&mid);
+			printf("\n");}
+
+
+		multiplicar(divisor, &mid, &valorMul);
+
+		if (i < 40)
+			{
+			printf("valorMul = ");
+			printIntHexa(&valorMul);
+			printf("\t");
+			printf("target = ");
+			printIntHexa(target);
+			printf("\n");}
+
+		c = compara(&valorMul, target);
+		if (c == IGUAL) {
+			copiar(index, &mid);
+			copiar(resultado, &valorMul);
+
+			freeInt(&mid);
+			freeInt(&valorMul);
+			freeInt(&left);
+			freeInt(&right);
+			return;
+		} else if (c == MENOR) {
+			if (i < 40)printf("Menor!\n");
+			//left = mid + 1;
+			incrementar1(&mid);
+			copiar(&left, &mid);
+			
+		} else {
+			if (i < 40)printf("Maior!\n");
+			//right = mid - 1;
+			decrementar1(&mid);
+			copiar(&right, &mid);
+			
+		}
+		left_comparado_right = compara(&left, &right);
+	}
+	copiar(index, &right);
+	multiplicar(divisor, index, resultado);
+	freeInt(&mid);
+	freeInt(&valorMul);
+	freeInt(&left);
+	freeInt(&right);
 }
