@@ -2,12 +2,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(void) {
     Rsa *rsa;
     publicKey *pubKey;
-    unsigned char mensagem[] = "mohamed";
-    size_t bits = 128;
+    unsigned char mensagem[] = "Eu sou muito foda";
+    size_t bits = 256;
 
     unsigned char *cipher, *decriptado;
     
@@ -15,7 +16,7 @@ int main(void) {
     
     
     printf("M = 0x");
-    for (size_t i = 0; i < 3; i++) {
+    for (size_t i = 0; i < strlen((char*)mensagem) + 1; i++) {
         printf("%02x", mensagem[i]);
     }
     printf("\n");

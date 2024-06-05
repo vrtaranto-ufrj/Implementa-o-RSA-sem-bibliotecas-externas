@@ -190,21 +190,8 @@ unsigned char * encrypt(unsigned char *message, Rsa *rsa) {
     }
 
     // Faz a mágia do RSA
-    printf("intMessage = ");
-    printIntHexa(&intMessage);
-    printf("\t");
-    printf("e = ");
-    printIntHexa(&rsa->e);
-    printf("\t");
-    printf("n = ");
-    printIntHexa(&rsa->n);
-    printf("\n");
     
     bigPowMod(&intMessage, &rsa->e, &rsa->n, &intCipher);
-
-    printf("intCipher = ");
-    printIntHexa(&intCipher);
-    printf("\n");
 
     // Coloca o cipher para string
     for(size_t i = 0; i < tamanhoBytes; i++) {
@@ -255,10 +242,8 @@ unsigned char * decrypt(unsigned char *cipher, Rsa *rsa) {
         somar(&intCipher, &auxiliar, &intCipher);
     }
 
-    printf("chegou\n");
     // Faz a mágia do RSAintCipher
     bigPowMod(&intCipher, &rsa->d, &rsa->n, &intMessage);
-    printf("passou\n");
 
     // Coloca o message para string
     for(size_t i = 0; i < tamanhoBytes; i++) {
@@ -444,7 +429,7 @@ bool isPrime(big_int *n, int iteracoes) {
     copiar(&n_menos_1, n);
     decrementar1(&n_menos_1);
     copiar(&d, &n_menos_1);
-    copiar(&n_menos_2, &d);
+    copiar(&n_menos_2, &n_menos_1);
     decrementar1(&n_menos_2);
 
     atribuirValor(2, &dois, 0);

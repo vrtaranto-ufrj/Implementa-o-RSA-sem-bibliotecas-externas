@@ -5,19 +5,19 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define BITS 4096
-#define NUM_INTS 3
+#define BITS 128
+#define NUM_INTS 4
 
 #define NMEMB BITS/(SIZE_INT*8)
 
 int main(void) {
-	big_int inteiros[3];
+	big_int inteiros[NUM_INTS];
 		
 	for (size_t i = 0; i < NUM_INTS; i++) {
 		inicializar(&inteiros[i], NMEMB);
 	}
 
-	for (size_t i = 0; i < 2; i++) {
+	/*for (size_t i = 0; i < 2; i++) {
 		for (size_t j = 0; j < NMEMB/2; j++) {
 			if (j >= NMEMB/4) {
 				if (i == 0) {
@@ -31,7 +31,16 @@ int main(void) {
 			}
 			
 		}
-	}
+	}*/
+
+	atribuirValor(0xe8d55b57, &inteiros[0], 0);
+	atribuirValor(0xc22ef2ee, &inteiros[0], 1);
+	atribuirValor(0x814d2ba9, &inteiros[0], 2);
+	atribuirValor(0x6d0d10b4, &inteiros[0], 3);
+
+	atribuirValor(0x0f000000, &inteiros[1], 2);	
+
+
 	
 	printf("a = ");
 	printIntHexa(&inteiros[0]);
@@ -56,16 +65,16 @@ int main(void) {
 	//somar(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//subtrair(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//multiplicar(&inteiros[0], &inteiros[1], &inteiros[2]);
-	//dividir(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
+	dividir(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
 	//bsearchDiv(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
-	potencia(&inteiros[1], 3, &inteiros[2]);
+	//potencia(&inteiros[1], 3, &inteiros[2]);
 	
 	printf("resultado = ");
 	printIntHexa(&inteiros[2]);
 	printf("\n");
 
 	printf("resto = ");
-	printIntHexa(&inteiros[0]);
+	printIntHexa(&inteiros[3]);
 	printf("\n");
 
 	

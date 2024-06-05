@@ -468,16 +468,6 @@ void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *respo
 	//copiar(&n, expoente);  // n = expoente;
 	upgrade(expoente, &n);
 
-	printf("atual = ");
-    printIntHexa(&atual);
-    printf("\t");
-    printf("resultado = ");
-    printIntHexa(&resultado);
-    printf("\t");
-    printf("n = ");
-    printIntHexa(&n);
-    printf("\n");
-	printf("------------------------------------------------------------------------\n");
 
 	while (!eZero(&n)) {
 		if (n.array[0] & 1) {
@@ -487,18 +477,6 @@ void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *respo
 		multiplicar(&atual, &atual, &auxiliar);
 		dividir(&auxiliar, &moduloUpgrade, &auxiliar, &atual);
 		metade(&n);
-		if (expoente->array[0] == 65537) {
-			printf("atual = ");
-			printIntHexa(&atual);
-			printf("\t");
-			printf("resultado = ");
-			printIntHexa(&resultado);
-			printf("\t");
-			printf("n = ");
-			printIntHexa(&n);
-			printf("\n");
-		}
-
 	}
 	
 	upgrade(modulo, &n);
@@ -518,25 +496,33 @@ bool ePar(big_int *bigInt) {
 }
 
 void randInt(big_int *min, big_int *max, big_int *resposta) {
-	big_int range;
+	big_int range, auxiliar, randomico;
 	if (compara(min, max) == MAIOR) {
 		fprintf(stderr, "Invalido: min > max\n");
 		exit(EXIT_FAILURE);
 	}
 
 	inicializar(&range, min->nmemb);
+	inicializar(&auxiliar, min->nmemb);
+	inicializar(&randomico, min->nmemb);
 
-	generate_random_bytes(resposta);
+	generate_random_bytes(&randomico);
+	
 
 	subtrair(max, min, &range);
 	incrementar1(&range);
 
-	dividir(resposta, &range, &range, resposta);
-	subtrair(min, resposta, resposta);
+
+
+	dividir(&randomico, &range, &auxiliar, resposta);
+	somar(min, resposta, resposta);
 
 	if (ePar(resposta)) {
 		resposta->array[0]++;
 	}
+	freeInt(&range);
+	freeInt(&auxiliar);
+	freeInt(&randomico);
 }
 
 void generate_random_bytes(big_int *n) {
@@ -556,6 +542,8 @@ void generate_random_bytes(big_int *n) {
         close(fd);
         exit(EXIT_FAILURE);
     }
+
+	
 
     close(fd);
 }
