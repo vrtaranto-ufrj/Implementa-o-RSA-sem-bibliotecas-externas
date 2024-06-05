@@ -43,3 +43,6 @@ void metade(big_int*bigInt);
 void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resultado);
 void potencia(big_int *base, int_usado expoente, big_int *resultado);
 void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *resposta);
+bool ePar(big_int *bigInt);
+void randInt(big_int *min, big_int *max, big_int *resposta);
+void generate_random_bytes(big_int *n);

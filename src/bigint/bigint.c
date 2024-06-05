@@ -8,6 +8,8 @@
 #include <string.h>
 #include <inttypes.h>
 #include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 typedef struct {
         uint64_t *array;
@@ -477,4 +479,51 @@ void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *respo
 	freeInt(&resultado);
 	freeInt(&n);
 	freeInt(&auxiliar);
+}
+
+bool ePar(big_int *bigInt) {
+	return !(bigInt->array[0] & 1);  // Primeiro bit é 1?
+}
+
+void randInt(big_int *min, big_int *max, big_int *resposta) {
+	big_int range;
+	if (compara(min, max) == MAIOR) {
+		fprintf(stderr, "Invalido: min > max\n");
+		exit(EXIT_FAILURE);
+	}
+
+	inicializar(&range, min->nmemb);
+
+	generate_random_bytes(resposta);
+
+	subtrair(max, min, &range);
+	incrementar1(&range);
+
+	dividir(resposta, &range, &range, resposta);
+	subtrair(min, resposta, resposta);
+
+	if (ePar(resposta)) {
+		resposta->array[0]++;
+	}
+}
+
+void generate_random_bytes(big_int *n) {
+    int fd = open("/dev/urandom", O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    ssize_t result = read(fd, n->array, n->nmemb*sizeof(int_usado));
+    if (result == -1) {
+        perror("read");
+        close(fd);
+        exit(EXIT_FAILURE);
+    } else if ((size_t)result != n->nmemb*sizeof(int_usado)) {
+        fprintf(stderr, "Não foi possível lr tantos random bytes\n");
+        close(fd);
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
 }

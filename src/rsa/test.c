@@ -7,7 +7,7 @@ int main(void) {
     Rsa *rsa;
     publicKey *pubKey;
     unsigned char mensagem[] = "mohamed";
-    size_t bits = 128;
+    size_t bits = 256;
 
     unsigned char *cipher, *decriptado;
     

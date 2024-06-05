@@ -25,6 +25,7 @@ typedef struct structpublicKey {
 } publicKey;
 
 void modinv(Rsa *rsa);
+void generatePrime(big_int *n);
 
 Rsa * criarKeys(uint32_t numero_bits) {
     big_int phi_p, phi_q;
@@ -53,8 +54,10 @@ Rsa * criarKeys(uint32_t numero_bits) {
     inicializar(&phi_q, nmemb);
 
     // Temporário, mudar para uma funcao geradora de números aleatórios depois!!!!!!!!!!!!!!
-    atribuirValor(3808879747, &rsa->p, 0);
-    atribuirValor(3336254773, &rsa->q, 0);
+    generatePrime(&rsa->p);
+    generatePrime(&rsa->q);
+    //atribuirValor(3808879747, &rsa->p, 0);
+    //atribuirValor(3336254773, &rsa->q, 0);
     // Temporário, mudar para uma funcao geradora de números aleatórios depois!!!!!!!!!!!!!!
 
     // Cálculo do n
@@ -75,10 +78,10 @@ Rsa * criarKeys(uint32_t numero_bits) {
     atribuirValor(65537, &rsa->e, 0);
     
 
-    // Temporário, mudar para uma funcao que calcula o d!!!!!!!!!!!!!!
+
     modinv(rsa);
     //atribuirValor(791, &rsa->d, 0);
-    // Temporário, mudar para uma funcao que calcula o d!!!!!!!!!!!!!!
+
 
     printf("p = ");
     printIntHexa(&rsa->p);
@@ -238,8 +241,10 @@ unsigned char * decrypt(unsigned char *cipher, Rsa *rsa) {
         somar(&intCipher, &auxiliar, &intCipher);
     }
 
+    printf("chegou\n");
     // Faz a mágia do RSAintCipher
     bigPowMod(&intCipher, &rsa->d, &rsa->n, &intMessage);
+    printf("passou\n");
 
     // Coloca o message para string
     for(size_t i = 0; i < tamanhoBytes; i++) {
@@ -538,4 +543,106 @@ void modinv(Rsa *rsa) {
     freeInt(&x1);
     freeInt(&y1);
     freeInt(&auxiliar);
+}
+
+bool isPrime(big_int *n, int iteracoes) {
+    big_int auxiliar, d, dois, n_menos_1, n_menos_2, random;
+    uint64_t s;
+    size_t tamanho;
+    bool deuBreak;
+
+    if (eUm(n) || eZero(n)) {
+        return false;
+    }
+
+    tamanho = n->nmemb;
+
+    inicializar(&auxiliar, tamanho);
+
+    atribuirValor(3, &auxiliar, 0);
+
+    if (compara(n, &auxiliar) <= IGUAL) {
+        freeInt(&auxiliar);
+        return true;
+    }
+
+    if (ePar(n)) {
+        freeInt(&auxiliar);
+        return false;
+    }
+    inicializar(&d, tamanho);
+    inicializar(&dois, tamanho);
+    inicializar(&n_menos_1, tamanho);
+    inicializar(&n_menos_2, tamanho);
+    inicializar(&random, tamanho);
+
+    copiar(&n_menos_1, n);
+    decrementar1(&n_menos_1);
+    copiar(&d, &n_menos_1);
+    copiar(&n_menos_2, &d);
+    decrementar1(&n_menos_2);
+
+    atribuirValor(2, &dois, 0);
+    s = 0;
+
+    while (ePar(&d)) {
+        metade(&d);
+        s++;
+    }
+
+    for (int i = 0; i < iteracoes; i++) {
+        randInt(&dois, &n_menos_2, &random);
+        bigPowMod(&random, &d, n, &auxiliar);
+        if (eUm(&auxiliar) || compara(&auxiliar, &n_menos_1) == IGUAL) {
+            continue;
+        }
+
+        deuBreak = false;
+        for (uint64_t j = 0; j < s - 1; j++) {
+            bigPowMod(&auxiliar, &dois, n, &auxiliar);
+            if (compara(&auxiliar, &n_menos_1) == IGUAL) {
+                deuBreak = true;
+                break;
+            }
+        }
+
+        if (!deuBreak) {
+            freeInt(&auxiliar);
+            freeInt(&d);
+            freeInt(&dois);
+            freeInt(&n_menos_1);
+            freeInt(&n_menos_2);
+            freeInt(&random);
+            return false;
+        }
+    }
+
+
+    freeInt(&auxiliar);
+    freeInt(&d);
+    freeInt(&dois);
+    freeInt(&n_menos_1);
+    freeInt(&n_menos_2);
+    freeInt(&random);
+    return true;
+}
+
+void generatePrime(big_int *n) {
+    big_int min, max;
+
+    inicializar(&min, n->nmemb);
+    inicializar(&max, n->nmemb);
+
+    min.array[n->nmemb/2-1] = 0x01000000;
+    max.array[n->nmemb/2-1] = 0x0fffffff;
+    for (size_t i = 0; i < n->nmemb/2-1; i++) {
+        atribuirValor(0xffffffff, &max, i);
+    }
+    
+    do {
+        randInt(&min, &max, n);
+    } while (!isPrime(n, 100));
+
+    freeInt(&min);
+    freeInt(&max);
 }

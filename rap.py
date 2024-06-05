@@ -62,7 +62,20 @@ def modinv(e, phi):
         return x % phi
 
 e = 65537
-phi = 3120
+phi = 0x00000f73c00ae48ccb059dd5026a49e78d99dad1e796d4ffa9327a86be5b2160
 
 d = modinv(e, phi)
 print(f'O valor de d é: {hex(d)}, e = {hex(e)}, phi = {hex(phi)}')
+'''from sympy import isprime
+
+# Números fornecidos
+num1 = 0x00000000000000000000000000000000004900e452dc70c7b5b41b5f4f1b89a1
+num2 = 0x00000000000000000000000000000000000b6302ec3c57ef31b7ea6d5331fbe3
+
+# Verificação de primalidade
+is_prime_num1 = isprime(num1)
+is_prime_num2 = isprime(num2)
+
+print(f"O número {hex(num1)} é primo? {is_prime_num1}")
+print(f"O número {hex(num2)} é primo? {is_prime_num2}")
+'''
