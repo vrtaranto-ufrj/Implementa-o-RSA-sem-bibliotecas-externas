@@ -396,11 +396,11 @@ void modinv(Rsa *rsa) {
                 printf("NEGATIVO\n");
             } else if (x1Negativo && !temp_x0Negativo) {  // NEG > POS
                 somar(&auxiliar, &temp_x0, &x1);
-                x1Negativo = false;
+                x1Negativo = true;
                 printf("NEGATIVO\n");
             } else {                                    // POS > NEG
                 somar(&auxiliar, &temp_x0, &x1);
-                x1Negativo = true;
+                x1Negativo = false;
                 printf("POSITIVO\n");
             }
         } else {
@@ -474,15 +474,19 @@ void modinv(Rsa *rsa) {
             if (!y1Negativo && !temp_y0Negativo) {  // POS = POS
                 subtrair(&temp_y0, &auxiliar, &y1);
                 y1Negativo = false;
+                printf("POSITIVOZERO\n");
             } else if (y1Negativo && temp_y0Negativo) {  // NEG = NEG
                 subtrair(&temp_y0, &auxiliar, &y1);
                 y1Negativo = false;
+                printf("POSITIVOZERO\n");
             } else if (y1Negativo && !temp_y0Negativo) {  // NEG = POS
                 somar(&auxiliar, &temp_y0, &y1);
                 y1Negativo = true;
+                printf("NEGATIVO\n");
             } else {                                    // POS = NEG
                 somar(&auxiliar, &temp_y0, &y1);
                 y1Negativo = false;
+                printf("POSITIVO\n");
             }
         }
 
@@ -641,7 +645,7 @@ void generatePrime(big_int *n) {
     
     do {
         randInt(&min, &max, n);
-    } while (!isPrime(n, 100));
+    } while (!isPrime(n, 20));
 
     freeInt(&min);
     freeInt(&max);
