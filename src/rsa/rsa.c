@@ -284,9 +284,9 @@ unsigned char * decrypt(unsigned char *cipher, Rsa *rsa) {
 }
 
 void modinv(Rsa *rsa) {
-    big_int a, b, q, temp_a, temp_b, temp_x0, temp_y0, x0, x1, y0, y1, auxiliar;
+    big_int a, b, q, temp_a, temp_b, temp_x0, x0, x1, auxiliar;
     size_t tamanho;
-    bool x1Negativo, y1Negativo, x0Negativo, y0Negativo, temp_x0Negativo, temp_y0Negativo;
+    bool x1Negativo, x0Negativo, temp_x0Negativo;
     comparacao c;
 
     tamanho = rsa->n.nmemb;
@@ -297,27 +297,19 @@ void modinv(Rsa *rsa) {
     inicializar(&temp_a, tamanho);
     inicializar(&temp_b, tamanho);
     inicializar(&temp_x0, tamanho);
-    inicializar(&temp_y0, tamanho);
     inicializar(&x0, tamanho);
     inicializar(&x1, tamanho);
-    inicializar(&y0, tamanho);
-    inicializar(&y1, tamanho);
     inicializar(&auxiliar, tamanho);
 
     atribuirValor(1, &x0, 0);
     atribuirValor(0, &x1, 0);
-    atribuirValor(0, &y0, 0);
-    atribuirValor(1, &y1, 0);
 
     copiar(&a, &rsa->e);
     copiar(&b, &rsa->phi);
 
     x1Negativo = false;
-    y1Negativo = false;
     x0Negativo = false;
-    y0Negativo = false;
     temp_x0Negativo = false;
-    temp_y0Negativo = false;
 
     int i = 0;
 
@@ -337,13 +329,6 @@ void modinv(Rsa *rsa) {
     printIntHexa(&x1);
     printf("\n");
     if (x1Negativo) printf("negativo\n");
-    printf("y0 = ");
-    printIntHexa(&y0);
-    printf("\n");
-    printf("y1 = ");
-    printIntHexa(&y1);
-    printf("\n");
-    if (y1Negativo) printf("negativo\n");
     
     while(!eZero(&b)) {
         //printf("i = %d", ++i);
@@ -421,74 +406,7 @@ void modinv(Rsa *rsa) {
         }
 
 
-        copiar(&temp_y0, &y0);
-        temp_y0Negativo = y0Negativo;
-
-        copiar(&y0, &y1);
-        y0Negativo = y1Negativo;
-
         
-        multiplicar(&q, &y1, &auxiliar);
-
-        c = compara(&temp_y0, &auxiliar);
-        if (c == MENOR) {
-            printf("MENOR ");
-            if (!y1Negativo && !temp_y0Negativo) {  // POS < POS
-                subtrair(&auxiliar, &temp_y0, &y1);
-                y1Negativo = true;
-                printf("NEGATIVOa\n");
-            } else if (y1Negativo && temp_y0Negativo) {  // NEG < NEG
-                subtrair(&auxiliar, &temp_y0, &y1);
-                y1Negativo = false;
-                printf("POSITIVOa\n");
-            } else if (y1Negativo && !temp_y0Negativo) {  // NEG < POS
-                somar(&auxiliar, &temp_y0, &y1);
-                y1Negativo = false;
-                printf("NEGATIVO\n");
-            } else {                                    // POS < NEG
-                somar(&auxiliar, &temp_y0, &y1);
-                y1Negativo = true;
-                printf("POSITIVO\n");
-            }
-        } else if (c == MAIOR){
-            printf("MAIOR ");
-            if (!y1Negativo && !temp_y0Negativo) {  // POS > POS
-                subtrair(&temp_y0, &auxiliar, &y1);
-                y1Negativo = false;
-                printf("POSITIVO\n");
-            } else if (y1Negativo && temp_y0Negativo) {  // NEG > NEG
-                subtrair(&temp_y0, &auxiliar, &y1);
-                y1Negativo = true;
-                printf("NEGATIVO\n");
-            } else if (y1Negativo && !temp_y0Negativo) {  // NEG > POS
-                somar(&auxiliar, &temp_y0, &y1);
-                y1Negativo = true;
-                printf("NEGATIVO\n");
-            } else {                                    // POS > NEG
-                somar(&auxiliar, &temp_y0, &y1);
-                y1Negativo = false;
-                printf("POSITIVO\n");
-            }
-        } else {
-            printf("IGUAL ");
-            if (!y1Negativo && !temp_y0Negativo) {  // POS = POS
-                subtrair(&temp_y0, &auxiliar, &y1);
-                y1Negativo = false;
-                printf("POSITIVOZERO\n");
-            } else if (y1Negativo && temp_y0Negativo) {  // NEG = NEG
-                subtrair(&temp_y0, &auxiliar, &y1);
-                y1Negativo = false;
-                printf("POSITIVOZERO\n");
-            } else if (y1Negativo && !temp_y0Negativo) {  // NEG = POS
-                somar(&auxiliar, &temp_y0, &y1);
-                y1Negativo = true;
-                printf("NEGATIVO\n");
-            } else {                                    // POS = NEG
-                somar(&auxiliar, &temp_y0, &y1);
-                y1Negativo = false;
-                printf("POSITIVO\n");
-            }
-        }
 
         if (i++ < 40){printf("a = ");
         printIntHexa(&a);
@@ -510,19 +428,7 @@ void modinv(Rsa *rsa) {
         printf("x1 = ");
         printIntHexa(&x1);
         printf("\n");
-        if (x1Negativo) printf("negativo\n");
-        printf("y0 = ");
-        printIntHexa(&y0);
-        printf("\n");
-        if (y0Negativo) printf("negativo\n");
-        printf("temp_y0 = ");
-        printIntHexa(&temp_y0);
-        printf("\n");
-        if (temp_y0Negativo) printf("negativo\n");
-        printf("y1 = ");
-        printIntHexa(&y1);
-        printf("\n");
-        if (y1Negativo) printf("negativo\n");}
+        if (x1Negativo) printf("negativo\n");}
     }
 
     dividir(&x0, &rsa->phi, &auxiliar, &rsa->d);
@@ -542,10 +448,7 @@ void modinv(Rsa *rsa) {
     freeInt(&temp_b);
     freeInt(&temp_x0);
     freeInt(&x0);
-    freeInt(&temp_y0);
-    freeInt(&y0);
     freeInt(&x1);
-    freeInt(&y1);
     freeInt(&auxiliar);
 }
 

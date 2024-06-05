@@ -244,12 +244,14 @@ void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, si
 	r = resultado->array;
 	carry = 0;
 
-	for (size_t i = 0; i < int1->nmemb/2; i++) {
+	for (size_t i = 0; i < int1->nmemb; i++) {
+		if (i + pos_int2 < int1->nmemb) {
 		r[pos_int2+i] += (uint64_t) a[i] * (uint64_t) b[pos_int2] + carry;
 		carry = r[pos_int2+i] >> 32;  //  carry = os ultimos 32 bits do r
 		r[pos_int2+i] = r[pos_int2+i]  & 0x00000000ffffffff;  // Limpar os primeiros 32bits
 	}
-	r[pos_int2+int1->nmemb/2] += carry;
+	}
+	//r[pos_int2+int1->nmemb/2] += carry;
 
 }
 
@@ -261,7 +263,7 @@ void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 
 	inicializarExt(&temp, tamanho);
 
-	for(size_t i = 0; i < tamanho/2; i++) {
+	for(size_t i = 0; i < tamanho; i++) {
 		//printf("i = %zu\n", i);
 		multiplicarPalavra(int1, int2, &temp, i);
 	}
