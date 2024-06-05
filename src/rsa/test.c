@@ -6,21 +6,20 @@
 int main(void) {
     Rsa *rsa;
     publicKey *pubKey;
-    unsigned char mensagem[3];
-    size_t bits = 64;
-    mensagem[0] = 1;
-    mensagem[1] = 'a';
-    mensagem[2] = '\0';
+    unsigned char mensagem[] = "mohamed";
+    size_t bits = 128;
 
     unsigned char *cipher, *decriptado;
-
+    
     printf("M = %s\n", mensagem);
-
+    
+    
     printf("M = 0x");
-    for (size_t i = 0; i < 2; i++)
+    for (size_t i = 0; i < 3; i++) {
         printf("%02x", mensagem[i]);
+    }
     printf("\n");
-
+    
     rsa = criarKeys(bits);
     pubKey = getPubKey(rsa);
     cipher = encrypt(mensagem, rsa);
@@ -32,10 +31,10 @@ int main(void) {
 
     decriptado = decrypt(cipher, rsa);
 
-    /*printf("M = 0x");
+    printf("M = 0x");
     for (size_t i = 0; i < 8; i++)
         printf("%02x", decriptado[i]);
-    printf("\n");*/
+    printf("\n");
     printf("M = %s\n", decriptado);
 
     free(decriptado);

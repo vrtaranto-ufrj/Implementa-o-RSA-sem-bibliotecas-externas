@@ -14,7 +14,7 @@ print ("\nChave Privada: ", privkey, " Tamanho: ", len(str(privkey)))
 print("\nTexto Criptografado: ", enctexto, " Tamanho: ", len(enctexto))  
 print("\nTexto Descriptografado: ", dectexto)'''
 
-def powMod(base, expoente, modulo):
+'''def powMod(base, expoente, modulo):
 	atual = base % modulo
 	resultado = 1
 	n = expoente
@@ -30,4 +30,39 @@ def powMod(base, expoente, modulo):
 	
 	return resultado % modulo
 
-print(hex(powMod(0x20, 0x47, 0xca1)))
+print(hex(powMod(0x20, 0x47, 0xca1)))'''
+
+def iterative_egcd(a, b):
+    x0, x1 = 1, 0
+    y0, y1 = 0, 1
+    while b != 0:
+        q = a // b  # Calcula o quociente
+        temp_a = a  # Armazena valor antigo de a
+        temp_b = b  # Armazena valor antigo de b
+        a = temp_b  # Atualiza a
+        b = temp_a % temp_b  # Atualiza b com o resto
+
+        temp_x0 = x0  # Armazena valor antigo de x0
+        x0 = x1  # Atualiza x0
+        x1 = temp_x0 - q * x1  # Atualiza x1
+
+        temp_y0 = y0  # Armazena valor antigo de y0
+        y0 = y1  # Atualiza y0
+        y1 = temp_y0 - q * y1  # Atualiza y1
+        print(f'a = {hex(a)}, b = {hex(b)}, q = {hex(q)}, x0 = {hex(x0)}, temp_x0 = {hex(temp_x0)}, x1 = {hex(x1)}, y0 = {hex(y0)}, temp_y0 = {hex(temp_y0)}, y1 = {hex(y1)}')
+
+    return a, x0, y0
+
+def modinv(e, phi):
+    g, x, y = iterative_egcd(e, phi)
+    if g != 1:
+        raise Exception('O inverso modular não existe')
+    else:
+        print(f'x = {hex(x)}, phi = {hex(phi)}, return = {hex(x % phi)}')
+        return x % phi
+
+e = 65537
+phi = 3120
+
+d = modinv(e, phi)
+print(f'O valor de d é: {hex(d)}, e = {hex(e)}, phi = {hex(phi)}')

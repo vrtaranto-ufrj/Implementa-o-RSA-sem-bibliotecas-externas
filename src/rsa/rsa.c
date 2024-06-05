@@ -24,13 +24,14 @@ typedef struct structpublicKey {
     big_int n;
 } publicKey;
 
-//unsigned char * encryptBlock(unsigned char *block, unsigned char *blockCipher, Rsa *rsa, big_int *intBlock, big_int *intBlockCipher, big_int *auxiliar);
+void modinv(Rsa *rsa);
 
 Rsa * criarKeys(uint32_t numero_bits) {
     big_int phi_p, phi_q;
     size_t nmemb;
     Rsa *rsa;
-
+    
+    
     rsa = (Rsa*) malloc(sizeof(Rsa));
     if (rsa == NULL) {
         perror("malloc");
@@ -52,12 +53,13 @@ Rsa * criarKeys(uint32_t numero_bits) {
     inicializar(&phi_q, nmemb);
 
     // Temporário, mudar para uma funcao geradora de números aleatórios depois!!!!!!!!!!!!!!
-    atribuirValor(53, &rsa->p, 0);
-    atribuirValor(61, &rsa->q, 0);
+    atribuirValor(3808879747, &rsa->p, 0);
+    atribuirValor(3336254773, &rsa->q, 0);
     // Temporário, mudar para uma funcao geradora de números aleatórios depois!!!!!!!!!!!!!!
 
     // Cálculo do n
     multiplicar(&rsa->p, &rsa->q, &rsa->n);
+    
 
     // Calculo do phi(p) e phi(q)
     copiar(&phi_p, &rsa->p);
@@ -70,10 +72,12 @@ Rsa * criarKeys(uint32_t numero_bits) {
 
     // e = 2^16 + 1 = 65537
     //atribuirValor(65537, &rsa->e, 0);
-    atribuirValor(71, &rsa->e, 0);
+    atribuirValor(65537, &rsa->e, 0);
+    
 
     // Temporário, mudar para uma funcao que calcula o d!!!!!!!!!!!!!!
-    atribuirValor(791, &rsa->d, 0);
+    modinv(rsa);
+    //atribuirValor(791, &rsa->d, 0);
     // Temporário, mudar para uma funcao que calcula o d!!!!!!!!!!!!!!
 
     printf("p = ");
@@ -272,4 +276,266 @@ unsigned char * decrypt(unsigned char *cipher, Rsa *rsa) {
     freeInt(&auxiliar);
 
     return mensagem;
+}
+
+void modinv(Rsa *rsa) {
+    big_int a, b, q, temp_a, temp_b, temp_x0, temp_y0, x0, x1, y0, y1, auxiliar;
+    size_t tamanho;
+    bool x1Negativo, y1Negativo, x0Negativo, y0Negativo, temp_x0Negativo, temp_y0Negativo;
+    comparacao c;
+
+    tamanho = rsa->n.nmemb;
+
+    inicializar(&a, tamanho);
+    inicializar(&b, tamanho);
+    inicializar(&q, tamanho);
+    inicializar(&temp_a, tamanho);
+    inicializar(&temp_b, tamanho);
+    inicializar(&temp_x0, tamanho);
+    inicializar(&temp_y0, tamanho);
+    inicializar(&x0, tamanho);
+    inicializar(&x1, tamanho);
+    inicializar(&y0, tamanho);
+    inicializar(&y1, tamanho);
+    inicializar(&auxiliar, tamanho);
+
+    atribuirValor(1, &x0, 0);
+    atribuirValor(0, &x1, 0);
+    atribuirValor(0, &y0, 0);
+    atribuirValor(1, &y1, 0);
+
+    copiar(&a, &rsa->e);
+    copiar(&b, &rsa->phi);
+
+    x1Negativo = false;
+    y1Negativo = false;
+    x0Negativo = false;
+    y0Negativo = false;
+    temp_x0Negativo = false;
+    temp_y0Negativo = false;
+
+    int i = 0;
+
+    printf("a = ");
+    printIntHexa(&a);
+    printf("\n");
+    printf("b = ");
+    printIntHexa(&b);
+    printf("\n");
+    printf("q = ");
+    printIntHexa(&q);
+    printf("\n");
+    printf("x0 = ");
+    printIntHexa(&x0);
+    printf("\n");
+    printf("x1 = ");
+    printIntHexa(&x1);
+    printf("\n");
+    if (x1Negativo) printf("negativo\n");
+    printf("y0 = ");
+    printIntHexa(&y0);
+    printf("\n");
+    printf("y1 = ");
+    printIntHexa(&y1);
+    printf("\n");
+    if (y1Negativo) printf("negativo\n");
+    
+    while(!eZero(&b)) {
+        //printf("i = %d", ++i);
+        dividir(&a, &b, &q, &auxiliar);
+        printf("oi\n");
+
+        copiar(&temp_a, &a);
+        copiar(&temp_b, &b);
+        copiar(&a, &temp_b);
+        dividir(&temp_a, &temp_b, &auxiliar, &b);
+
+        copiar(&temp_x0, &x0);
+        temp_x0Negativo = x0Negativo;
+
+        copiar(&x0, &x1);
+        x0Negativo = x1Negativo;
+
+        
+        multiplicar(&q, &x1, &auxiliar);
+        c = compara(&temp_x0, &auxiliar);
+        
+        if (c == MENOR) {
+            printf("MENOR ");
+            if (!x1Negativo && !temp_x0Negativo) {  // POS < POS
+                subtrair(&auxiliar, &temp_x0, &x1);
+                x1Negativo = true;
+                printf("NEGATIVOa\n");
+            } else if (x1Negativo && temp_x0Negativo) {  // NEG < NEG
+                subtrair(&auxiliar, &temp_x0, &x1);
+                x1Negativo = false;
+                printf("POSITIVOa\n");
+            } else if (x1Negativo && !temp_x0Negativo) {  // NEG < POS
+                somar(&auxiliar, &temp_x0, &x1);
+                x1Negativo = false;
+                printf("NEGATIVO\n");
+            } else {                                    // POS < NEG
+                somar(&auxiliar, &temp_x0, &x1);
+                x1Negativo = true;
+                printf("POSITIVO\n");
+            }
+        } else if (c == MAIOR){
+            printf("MAIOR ");
+            if (!x1Negativo && !temp_x0Negativo) {  // POS > POS
+                subtrair(&temp_x0, &auxiliar, &x1);
+                x1Negativo = false;
+                printf("POSITIVO\n");
+            } else if (x1Negativo && temp_x0Negativo) {  // NEG > NEG
+                subtrair(&temp_x0, &auxiliar, &x1);
+                x1Negativo = true;
+                printf("NEGATIVO\n");
+            } else if (x1Negativo && !temp_x0Negativo) {  // NEG > POS
+                somar(&auxiliar, &temp_x0, &x1);
+                x1Negativo = false;
+                printf("NEGATIVO\n");
+            } else {                                    // POS > NEG
+                somar(&auxiliar, &temp_x0, &x1);
+                x1Negativo = true;
+                printf("POSITIVO\n");
+            }
+        } else {
+            printf("IGUAL ");
+            if (!x1Negativo && !temp_x0Negativo) {  // POS = POS
+                subtrair(&temp_x0, &auxiliar, &x1);
+                x1Negativo = false;
+            } else if (x1Negativo && temp_x0Negativo) {  // NEG = NEG
+                subtrair(&temp_x0, &auxiliar, &x1);
+                x1Negativo = false;
+            } else if (x1Negativo && !temp_x0Negativo) {  // NEG = POS
+                somar(&auxiliar, &temp_x0, &x1);
+                x1Negativo = true;
+            } else {                                    // POS = NEG
+                somar(&auxiliar, &temp_x0, &x1);
+                x1Negativo = false;
+            }
+        }
+
+
+        copiar(&temp_y0, &y0);
+        temp_y0Negativo = y0Negativo;
+
+        copiar(&y0, &y1);
+        y0Negativo = y1Negativo;
+
+        
+        multiplicar(&q, &y1, &auxiliar);
+
+        c = compara(&temp_y0, &auxiliar);
+        if (c == MENOR) {
+            printf("MENOR ");
+            if (!y1Negativo && !temp_y0Negativo) {  // POS < POS
+                subtrair(&auxiliar, &temp_y0, &y1);
+                y1Negativo = true;
+                printf("NEGATIVOa\n");
+            } else if (y1Negativo && temp_y0Negativo) {  // NEG < NEG
+                subtrair(&auxiliar, &temp_y0, &y1);
+                y1Negativo = false;
+                printf("POSITIVOa\n");
+            } else if (y1Negativo && !temp_y0Negativo) {  // NEG < POS
+                somar(&auxiliar, &temp_y0, &y1);
+                y1Negativo = false;
+                printf("NEGATIVO\n");
+            } else {                                    // POS < NEG
+                somar(&auxiliar, &temp_y0, &y1);
+                y1Negativo = true;
+                printf("POSITIVO\n");
+            }
+        } else if (c == MAIOR){
+            printf("MAIOR ");
+            if (!y1Negativo && !temp_y0Negativo) {  // POS > POS
+                subtrair(&temp_y0, &auxiliar, &y1);
+                y1Negativo = false;
+                printf("POSITIVO\n");
+            } else if (y1Negativo && temp_y0Negativo) {  // NEG > NEG
+                subtrair(&temp_y0, &auxiliar, &y1);
+                y1Negativo = true;
+                printf("NEGATIVO\n");
+            } else if (y1Negativo && !temp_y0Negativo) {  // NEG > POS
+                somar(&auxiliar, &temp_y0, &y1);
+                y1Negativo = true;
+                printf("NEGATIVO\n");
+            } else {                                    // POS > NEG
+                somar(&auxiliar, &temp_y0, &y1);
+                y1Negativo = false;
+                printf("POSITIVO\n");
+            }
+        } else {
+            printf("IGUAL ");
+            if (!y1Negativo && !temp_y0Negativo) {  // POS = POS
+                subtrair(&temp_y0, &auxiliar, &y1);
+                y1Negativo = false;
+            } else if (y1Negativo && temp_y0Negativo) {  // NEG = NEG
+                subtrair(&temp_y0, &auxiliar, &y1);
+                y1Negativo = false;
+            } else if (y1Negativo && !temp_y0Negativo) {  // NEG = POS
+                somar(&auxiliar, &temp_y0, &y1);
+                y1Negativo = true;
+            } else {                                    // POS = NEG
+                somar(&auxiliar, &temp_y0, &y1);
+                y1Negativo = false;
+            }
+        }
+
+        if (i++ < 40){printf("a = ");
+        printIntHexa(&a);
+        printf("\n");
+        printf("b = ");
+        printIntHexa(&b);
+        printf("\n");
+        printf("q = ");
+        printIntHexa(&q);
+        printf("\n");
+        printf("x0 = ");
+        printIntHexa(&x0);
+        printf("\n");
+        if (x0Negativo) printf("negativo\n");
+        printf("temp_x0 = ");
+        printIntHexa(&temp_x0);
+        printf("\n");
+        if (temp_x0Negativo) printf("negativo\n");
+        printf("x1 = ");
+        printIntHexa(&x1);
+        printf("\n");
+        if (x1Negativo) printf("negativo\n");
+        printf("y0 = ");
+        printIntHexa(&y0);
+        printf("\n");
+        if (y0Negativo) printf("negativo\n");
+        printf("temp_y0 = ");
+        printIntHexa(&temp_y0);
+        printf("\n");
+        if (temp_y0Negativo) printf("negativo\n");
+        printf("y1 = ");
+        printIntHexa(&y1);
+        printf("\n");
+        if (y1Negativo) printf("negativo\n");}
+    }
+
+    dividir(&x0, &rsa->phi, &auxiliar, &rsa->d);
+    if (x0Negativo) {
+        subtrair(&rsa->phi, &rsa->d, &rsa->d);
+    }
+
+    if (!eUm(&a)) {
+        fprintf(stderr, "O inverso modular não existe\n");
+        exit(EXIT_FAILURE);
+    }
+
+    freeInt(&a);
+    freeInt(&b);
+    freeInt(&q);
+    freeInt(&temp_a);
+    freeInt(&temp_b);
+    freeInt(&temp_x0);
+    freeInt(&x0);
+    freeInt(&temp_y0);
+    freeInt(&y0);
+    freeInt(&x1);
+    freeInt(&y1);
+    freeInt(&auxiliar);
 }
