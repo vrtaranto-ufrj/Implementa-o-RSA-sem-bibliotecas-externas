@@ -251,8 +251,6 @@ void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, si
 		r[pos_int2+i] = r[pos_int2+i]  & 0x00000000ffffffff;  // Limpar os primeiros 32bits
 	}
 	}
-	//r[pos_int2+int1->nmemb/2] += carry;
-
 }
 
 void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
@@ -449,33 +447,65 @@ void potencia(big_int *base, int_usado expoente, big_int *resultado) {
 }
 
 void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *resposta) {
-	big_int atual, resultado, n, auxiliar;
+	big_int atual, resultado, n, auxiliar, auxiliar2, moduloUpgrade;
 	size_t tamanho = base->nmemb;
 
-	inicializar(&atual, tamanho);
-	inicializar(&resultado, tamanho);
-	inicializar(&n, tamanho);
-	inicializar(&auxiliar, tamanho);
+	inicializar(&atual, tamanho*2);
+	inicializar(&resultado, tamanho*2);
+	inicializar(&n, tamanho*2);
+	inicializar(&auxiliar, tamanho*2);
+	inicializar(&auxiliar2, tamanho*2);
+	inicializar(&moduloUpgrade, tamanho*2);
 	
+	upgrade(base, &auxiliar2);
+	upgrade(modulo, &moduloUpgrade);
 
-	dividir(base, modulo, &auxiliar, &atual);  // atual = base % modulo;
+	//dividir(base, modulo, &auxiliar, &atual);  // atual = base % modulo;
+	dividir(&auxiliar2, &moduloUpgrade, &auxiliar, &atual);
 
 	atribuirValor(1, &resultado, 0);  // resultado = 1;
 
-	copiar(&n, expoente);  // n = expoente;
+	//copiar(&n, expoente);  // n = expoente;
+	upgrade(expoente, &n);
+
+	printf("atual = ");
+    printIntHexa(&atual);
+    printf("\t");
+    printf("resultado = ");
+    printIntHexa(&resultado);
+    printf("\t");
+    printf("n = ");
+    printIntHexa(&n);
+    printf("\n");
+	printf("------------------------------------------------------------------------\n");
 
 	while (!eZero(&n)) {
 		if (n.array[0] & 1) {
 			multiplicar(&resultado, &atual, &auxiliar);
-			dividir(&auxiliar, modulo, &auxiliar, &resultado);
+			dividir(&auxiliar, &moduloUpgrade, &auxiliar, &resultado);
 		}
 		multiplicar(&atual, &atual, &auxiliar);
-		dividir(&auxiliar, modulo, &auxiliar, &atual);
+		dividir(&auxiliar, &moduloUpgrade, &auxiliar, &atual);
 		metade(&n);
+		if (expoente->array[0] == 65537) {
+			printf("atual = ");
+			printIntHexa(&atual);
+			printf("\t");
+			printf("resultado = ");
+			printIntHexa(&resultado);
+			printf("\t");
+			printf("n = ");
+			printIntHexa(&n);
+			printf("\n");
+		}
 
 	}
 	
-	dividir(&resultado, modulo, &auxiliar, resposta);
+	upgrade(modulo, &n);
+	//dividir(&resultado, modulo, &auxiliar, resposta);
+	dividir(&resultado, &n, &auxiliar, &atual);
+
+	downgrade(&atual, resposta);
 
 	freeInt(&atual);
 	freeInt(&resultado);
@@ -528,4 +558,21 @@ void generate_random_bytes(big_int *n) {
     }
 
     close(fd);
+}
+
+void upgrade(big_int *menor, big_int *maior) {
+	size_t tamanho;
+	setZero(maior);
+	tamanho = menor->nmemb;
+	for (size_t i = 0; i < tamanho; i++) {
+		maior->array[i] = menor->array[i];
+	}
+}
+
+void downgrade(big_int *maior, big_int *menor) {
+	size_t tamanho;
+	tamanho = menor->nmemb;
+	for (size_t i = 0; i < tamanho; i++) {
+		menor->array[i] = maior->array[i];
+	}
 }

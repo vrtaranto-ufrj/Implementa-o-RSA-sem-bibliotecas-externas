@@ -62,7 +62,7 @@ def modinv(e, phi):
         return x % phi
 
 e = 65537
-phi = 0x000007e719320fbfb39f48ad92fa2550
+phi = 0x00006718f51e1d2c869cd4659a0bcca8
 
 d = modinv(e, phi)
 print(f'O valor de d é: {hex(d)}, e = {hex(e)}, phi = {hex(phi)}')

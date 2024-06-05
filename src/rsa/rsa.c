@@ -190,7 +190,21 @@ unsigned char * encrypt(unsigned char *message, Rsa *rsa) {
     }
 
     // Faz a mágia do RSA
+    printf("intMessage = ");
+    printIntHexa(&intMessage);
+    printf("\t");
+    printf("e = ");
+    printIntHexa(&rsa->e);
+    printf("\t");
+    printf("n = ");
+    printIntHexa(&rsa->n);
+    printf("\n");
+    
     bigPowMod(&intMessage, &rsa->e, &rsa->n, &intCipher);
+
+    printf("intCipher = ");
+    printIntHexa(&intCipher);
+    printf("\n");
 
     // Coloca o cipher para string
     for(size_t i = 0; i < tamanhoBytes; i++) {
@@ -310,30 +324,10 @@ void modinv(Rsa *rsa) {
     x1Negativo = false;
     x0Negativo = false;
     temp_x0Negativo = false;
-
-    int i = 0;
-
-    printf("a = ");
-    printIntHexa(&a);
-    printf("\n");
-    printf("b = ");
-    printIntHexa(&b);
-    printf("\n");
-    printf("q = ");
-    printIntHexa(&q);
-    printf("\n");
-    printf("x0 = ");
-    printIntHexa(&x0);
-    printf("\n");
-    printf("x1 = ");
-    printIntHexa(&x1);
-    printf("\n");
-    if (x1Negativo) printf("negativo\n");
     
     while(!eZero(&b)) {
         //printf("i = %d", ++i);
         dividir(&a, &b, &q, &auxiliar);
-        printf("oi\n");
 
         copiar(&temp_a, &a);
         copiar(&temp_b, &b);
@@ -351,45 +345,34 @@ void modinv(Rsa *rsa) {
         c = compara(&temp_x0, &auxiliar);
         
         if (c == MENOR) {
-            printf("MENOR ");
             if (!x1Negativo && !temp_x0Negativo) {  // POS < POS
                 subtrair(&auxiliar, &temp_x0, &x1);
                 x1Negativo = true;
-                printf("NEGATIVOa\n");
             } else if (x1Negativo && temp_x0Negativo) {  // NEG < NEG
                 subtrair(&auxiliar, &temp_x0, &x1);
                 x1Negativo = false;
-                printf("POSITIVOa\n");
             } else if (x1Negativo && !temp_x0Negativo) {  // NEG < POS
                 somar(&auxiliar, &temp_x0, &x1);
                 x1Negativo = false;
-                printf("NEGATIVO\n");
             } else {                                    // POS < NEG
                 somar(&auxiliar, &temp_x0, &x1);
                 x1Negativo = true;
-                printf("POSITIVO\n");
             }
         } else if (c == MAIOR){
-            printf("MAIOR ");
             if (!x1Negativo && !temp_x0Negativo) {  // POS > POS
                 subtrair(&temp_x0, &auxiliar, &x1);
                 x1Negativo = false;
-                printf("POSITIVO\n");
             } else if (x1Negativo && temp_x0Negativo) {  // NEG > NEG
                 subtrair(&temp_x0, &auxiliar, &x1);
                 x1Negativo = true;
-                printf("NEGATIVO\n");
             } else if (x1Negativo && !temp_x0Negativo) {  // NEG > POS
                 somar(&auxiliar, &temp_x0, &x1);
                 x1Negativo = true;
-                printf("NEGATIVO\n");
             } else {                                    // POS > NEG
                 somar(&auxiliar, &temp_x0, &x1);
                 x1Negativo = false;
-                printf("POSITIVO\n");
             }
         } else {
-            printf("IGUAL ");
             if (!x1Negativo && !temp_x0Negativo) {  // POS = POS
                 subtrair(&temp_x0, &auxiliar, &x1);
                 x1Negativo = false;
@@ -404,31 +387,6 @@ void modinv(Rsa *rsa) {
                 x1Negativo = false;
             }
         }
-
-
-        
-
-        if (i++ < 40){printf("a = ");
-        printIntHexa(&a);
-        printf("\n");
-        printf("b = ");
-        printIntHexa(&b);
-        printf("\n");
-        printf("q = ");
-        printIntHexa(&q);
-        printf("\n");
-        printf("x0 = ");
-        printIntHexa(&x0);
-        printf("\n");
-        if (x0Negativo) printf("negativo\n");
-        printf("temp_x0 = ");
-        printIntHexa(&temp_x0);
-        printf("\n");
-        if (temp_x0Negativo) printf("negativo\n");
-        printf("x1 = ");
-        printIntHexa(&x1);
-        printf("\n");
-        if (x1Negativo) printf("negativo\n");}
     }
 
     dividir(&x0, &rsa->phi, &auxiliar, &rsa->d);

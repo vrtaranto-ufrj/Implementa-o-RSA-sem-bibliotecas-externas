@@ -46,3 +46,5 @@ void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *respo
 bool ePar(big_int *bigInt);
 void randInt(big_int *min, big_int *max, big_int *resposta);
 void generate_random_bytes(big_int *n);
+void upgrade(big_int *menor, big_int *maior);
+void downgrade(big_int *maior, big_int *menor);
