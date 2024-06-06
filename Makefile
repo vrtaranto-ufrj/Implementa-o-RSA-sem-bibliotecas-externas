@@ -10,7 +10,7 @@ BIN = rsa
 TESTBIN = test_bigint
 
 CC = gcc
-CFLAGS = -I$(DIRBIGINT) -Wall -Wextra -Werror -O3
+CFLAGS = -I$(DIRBIGINT) -Wall -Wextra -Werror -pg -O3
 CTESTFLAGS = -I$(DIRBIGINT) -Wall -Wextra -g -O3
 
 all: $(BIN)
@@ -30,9 +30,9 @@ a:
 $(TESTBIN): $(TESTSRC)
 	$(CC) $(CTESTFLAGS) -o $@ $^
 
-profile: $(TESTBIN)
-	./$(TESTBIN)
-	gprof $(TESTBIN) gmon.out > profile.txt
+profile: $(BIN)
+	./$(BIN) "oi" 128
+	gprof $(BIN) gmon.out > profile.txt
 
 clean:
-	rm -f $(BIN) $(TESTBIN) gmon.out profile.txt test
+	rm -f $(BIN) $(TESTBIN) gmon.out profile.txt test $(DIRRSA)/rsa.o $(DIRBIGINT)/bigint.o

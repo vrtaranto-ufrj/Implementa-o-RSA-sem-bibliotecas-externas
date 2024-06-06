@@ -486,7 +486,7 @@ void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resu
 	freeInt(&right);
 }
 
-void potencia(big_int *base, int_usado expoente, big_int *resultado) {
+big_int * potencia(big_int *base, int_usado expoente, big_int *resultado) {
 	big_int temp;
 	size_t tamanho;
 
@@ -500,48 +500,46 @@ void potencia(big_int *base, int_usado expoente, big_int *resultado) {
 	}
 	copiar(resultado, &temp);
 	freeInt(&temp);
+
+	return resultado;
 }
 
-void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *resposta) {
-	big_int atual, resultado, n, auxiliar2, moduloUpgrade;
+big_int * bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *resposta) {
+	big_int atual, resultado, n, moduloUpgrade;
 	size_t tamanho = base->nmemb;
 
 	inicializar(&atual, tamanho*2);
 	inicializar(&resultado, tamanho*2);
 	inicializar(&n, tamanho*2);
-	inicializar(&auxiliar2, tamanho*2);
 	inicializar(&moduloUpgrade, tamanho*2);
 	
-	upgrade(base, &auxiliar2);
-	upgrade(modulo, &moduloUpgrade);
+	
+	upgrade(modulo, &moduloUpgrade);  // moduloUpgrade = modulo;
 
-	//dividir(base, modulo, &auxiliar, &atual);  // atual = base % modulo;
-	//dividir(&auxiliar2, &moduloUpgrade, &auxiliar, &atual);
-	mod(&auxiliar2, &moduloUpgrade, &atual);
+	mod(upgrade(base, &atual), &moduloUpgrade, &atual);  // atual = base % modulo;
 
 	atribuirValor(1, &resultado, 0);  // resultado = 1;
 
-	//copiar(&n, expoente);  // n = expoente;
-	upgrade(expoente, &n);
-
+	upgrade(expoente, &n);  // n = expoente;
 
 	while (!eZero(&n)) {
 		if (n.array[0] & 1) {
-			mod(multiplicar(&resultado, &atual, &resultado), &moduloUpgrade, &resultado);  // resultado = (resultado * atual) mod moduloUpgrade
+			mod(multiplicar(&resultado, &atual, &resultado), &moduloUpgrade, &resultado);  // resultado = (resultado * atual) % moduloUpgrade
 		}
-		mod(multiplicar(&atual, &atual, &atual), &moduloUpgrade, &atual);  // atual = (atual * atual) mod moduloUpgrade
+		mod(multiplicar(&atual, &atual, &atual), &moduloUpgrade, &atual);  // atual = (atual * atual) % moduloUpgrade
 		metade(&n);
 	}
 	
-	upgrade(modulo, &n);
-	//dividir(&resultado, modulo, &auxiliar, resposta);
-	mod(&resultado, &n, &atual);
+	mod(&resultado, &moduloUpgrade, &atual);  // atual = resultado % moduloUpgrade
 
-	downgrade(&atual, resposta);
+	downgrade(&atual, resposta);  // resposta = atual
 
 	freeInt(&atual);
 	freeInt(&resultado);
 	freeInt(&n);
+	freeInt(&moduloUpgrade);
+
+	return resposta;
 }
 
 bool ePar(big_int *bigInt) {
@@ -549,23 +547,19 @@ bool ePar(big_int *bigInt) {
 }
 
 void randInt(big_int *min, big_int *max, big_int *resposta) {
-	big_int range, auxiliar, randomico;
+	big_int range, randomico;
 	if (compara(min, max) == MAIOR) {
 		fprintf(stderr, "Invalido: min > max\n");
 		exit(EXIT_FAILURE);
 	}
 
 	inicializar(&range, min->nmemb);
-	inicializar(&auxiliar, min->nmemb);
 	inicializar(&randomico, min->nmemb);
 
 	generate_random_bytes(&randomico);
-	
 
 	subtrair(max, min, &range);
 	incrementar1(&range);
-
-
 
 	//dividir(&randomico, &range, &auxiliar, resposta);
 	mod(&randomico, &range, resposta);
@@ -576,7 +570,6 @@ void randInt(big_int *min, big_int *max, big_int *resposta) {
 		resposta->array[0]++;
 	}
 	freeInt(&range);
-	freeInt(&auxiliar);
 	freeInt(&randomico);
 }
 
@@ -603,19 +596,23 @@ void generate_random_bytes(big_int *n) {
     close(fd);
 }
 
-void upgrade(big_int *menor, big_int *maior) {
+big_int * upgrade(big_int *menor, big_int *maior) {
 	size_t tamanho;
 	setZero(maior);
 	tamanho = menor->nmemb;
 	for (size_t i = 0; i < tamanho; i++) {
 		maior->array[i] = menor->array[i];
 	}
+
+	return maior;
 }
 
-void downgrade(big_int *maior, big_int *menor) {
+big_int * downgrade(big_int *maior, big_int *menor) {
 	size_t tamanho;
 	tamanho = menor->nmemb;
 	for (size_t i = 0; i < tamanho; i++) {
 		menor->array[i] = maior->array[i];
 	}
+
+	return menor;
 }

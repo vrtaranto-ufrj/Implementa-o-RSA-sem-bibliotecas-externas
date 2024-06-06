@@ -78,7 +78,7 @@ Rsa * criarKeys(uint32_t numero_bits) {
     atribuirValor(65537, &rsa->e, 0);
     
 
-
+    // Cálculo do d
     modinv(rsa);
     //atribuirValor(791, &rsa->d, 0);
 
