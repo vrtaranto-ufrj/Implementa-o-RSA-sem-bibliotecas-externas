@@ -302,7 +302,7 @@ big_int * multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 	return resultado;
 }
 
-void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
+void divisao(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
 	big_int temp, respostaBsearch, tempResultado;
 	size_t tamanho;
 	int_usado *dividendo;
@@ -333,6 +333,30 @@ void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
 	freeInt(&temp);
 	freeInt(&tempResultado);
 	freeInt(&respostaBsearch);
+}
+
+big_int * dividir(big_int *int1, big_int *int2, big_int *resultado) {
+	big_int auxiliar;
+
+	inicializar(&auxiliar, int1->nmemb);
+
+	divisao(int1, int2, resultado, &auxiliar);
+
+	freeInt(&auxiliar);
+
+	return resultado;
+}
+
+big_int * mod(big_int *int1, big_int *int2, big_int *resto) {
+	big_int auxiliar;
+
+	inicializar(&auxiliar, int1->nmemb);
+
+	divisao(int1, int2, &auxiliar, resto);
+
+	freeInt(&auxiliar);
+
+	return resto;
 }
 
 comparacao compara(big_int *int1, big_int *int2) {
@@ -479,13 +503,12 @@ void potencia(big_int *base, int_usado expoente, big_int *resultado) {
 }
 
 void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *resposta) {
-	big_int atual, resultado, n, auxiliar, auxiliar2, moduloUpgrade;
+	big_int atual, resultado, n, auxiliar2, moduloUpgrade;
 	size_t tamanho = base->nmemb;
 
 	inicializar(&atual, tamanho*2);
 	inicializar(&resultado, tamanho*2);
 	inicializar(&n, tamanho*2);
-	inicializar(&auxiliar, tamanho*2);
 	inicializar(&auxiliar2, tamanho*2);
 	inicializar(&moduloUpgrade, tamanho*2);
 	
@@ -493,7 +516,8 @@ void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *respo
 	upgrade(modulo, &moduloUpgrade);
 
 	//dividir(base, modulo, &auxiliar, &atual);  // atual = base % modulo;
-	dividir(&auxiliar2, &moduloUpgrade, &auxiliar, &atual);
+	//dividir(&auxiliar2, &moduloUpgrade, &auxiliar, &atual);
+	mod(&auxiliar2, &moduloUpgrade, &atual);
 
 	atribuirValor(1, &resultado, 0);  // resultado = 1;
 
@@ -503,24 +527,21 @@ void bigPowMod(big_int *base, big_int *expoente, big_int *modulo, big_int *respo
 
 	while (!eZero(&n)) {
 		if (n.array[0] & 1) {
-			multiplicar(&resultado, &atual, &auxiliar);
-			dividir(&auxiliar, &moduloUpgrade, &auxiliar, &resultado);
+			mod(multiplicar(&resultado, &atual, &resultado), &moduloUpgrade, &resultado);  // resultado = (resultado * atual) mod moduloUpgrade
 		}
-		multiplicar(&atual, &atual, &auxiliar);
-		dividir(&auxiliar, &moduloUpgrade, &auxiliar, &atual);
+		mod(multiplicar(&atual, &atual, &atual), &moduloUpgrade, &atual);  // atual = (atual * atual) mod moduloUpgrade
 		metade(&n);
 	}
 	
 	upgrade(modulo, &n);
 	//dividir(&resultado, modulo, &auxiliar, resposta);
-	dividir(&resultado, &n, &auxiliar, &atual);
+	mod(&resultado, &n, &atual);
 
 	downgrade(&atual, resposta);
 
 	freeInt(&atual);
 	freeInt(&resultado);
 	freeInt(&n);
-	freeInt(&auxiliar);
 }
 
 bool ePar(big_int *bigInt) {
@@ -546,7 +567,9 @@ void randInt(big_int *min, big_int *max, big_int *resposta) {
 
 
 
-	dividir(&randomico, &range, &auxiliar, resposta);
+	//dividir(&randomico, &range, &auxiliar, resposta);
+	mod(&randomico, &range, resposta);
+
 	somar(min, resposta, resposta);
 
 	if (ePar(resposta)) {

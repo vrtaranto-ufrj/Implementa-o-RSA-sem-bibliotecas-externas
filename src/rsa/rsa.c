@@ -312,12 +312,14 @@ void modinv(Rsa *rsa) {
     
     while(!eZero(&b)) {
         //printf("i = %d", ++i);
-        dividir(&a, &b, &q, &auxiliar);
+        //dividir(&a, &b, &q, &auxiliar);
+        dividir(&a, &b, &q);
 
         copiar(&temp_a, &a);
         copiar(&temp_b, &b);
         copiar(&a, &temp_b);
-        dividir(&temp_a, &temp_b, &auxiliar, &b);
+        //dividir(&temp_a, &temp_b, &auxiliar, &b);
+        mod(&temp_a, &temp_b, &b);
 
         copiar(&temp_x0, &x0);
         temp_x0Negativo = x0Negativo;
@@ -374,7 +376,8 @@ void modinv(Rsa *rsa) {
         }
     }
 
-    dividir(&x0, &rsa->phi, &auxiliar, &rsa->d);
+    //dividir(&x0, &rsa->phi, &auxiliar, &rsa->d);
+    mod(&x0, &rsa->phi, &rsa->d);
     if (x0Negativo) {
         subtrair(&rsa->phi, &rsa->d, &rsa->d);
     }
