@@ -42,10 +42,10 @@ int main(void) {
 
 
 	
-	printf("a = ");
+	printf("a         = ");
 	printIntHexa(&inteiros[0]);
 	printf("\n");
-	printf("b = ");
+	printf("b         = ");
 	printIntHexa(&inteiros[1]);
 	printf("\n");
 	//atribuirValor(0xffffffffffffffff, &int1, 0);
@@ -65,7 +65,7 @@ int main(void) {
 	//somar(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//subtrair(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//multiplicar(&inteiros[0], &inteiros[1], &inteiros[2]);
-	dividir(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
+	dividir(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[3]);
 	//bsearchDiv(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
 	//potencia(&inteiros[1], 3, &inteiros[2]);
 	
@@ -73,7 +73,7 @@ int main(void) {
 	printIntHexa(&inteiros[2]);
 	printf("\n");
 
-	printf("resto = ");
+	printf("resto     = ");
 	printIntHexa(&inteiros[3]);
 	printf("\n");
 

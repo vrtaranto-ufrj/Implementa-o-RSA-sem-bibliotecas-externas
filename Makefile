@@ -1,5 +1,5 @@
 SRC = $(DIRBIGINT)/bigint.c $(DIRRSA)/rsa.c $(DIRMAIN)/main.c
-TESTSRC = $(DIRBIGINT)/test_bigint.c
+TESTSRC = $(DIRBIGINT)/test_bigint.c $(DIRBIGINT)/bigint.c $(DIRRSA)/rsa.c
 
 DIRBIGINT = ./src/bigint
 DIRRSA = ./src/rsa
@@ -27,7 +27,7 @@ a:
 	gcc -Wall -Wextra -g -O3 ./src/bigint/bigint.c ./src/rsa/rsa.c ./src/rsa/test.c -o test
 
 
-$(TESTBIN): $(TESTSRC) $(SRC)
+$(TESTBIN): $(TESTSRC)
 	$(CC) $(CTESTFLAGS) -o $@ $^
 
 profile: $(TESTBIN)

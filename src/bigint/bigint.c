@@ -95,25 +95,25 @@ void copiarExt(big_int *int1, big_int_ext *int2) {
 	}
 }
 
-void incrementar1(big_int *bigInt) {
+big_int * incrementar1(big_int *bigInt) {
 	big_int temp;
 	
 	inicializar(&temp, bigInt->nmemb);
-	
-	atribuirValor(1, &temp, 0);
-	
-	somar(bigInt, &temp, bigInt);
+		
+	somarComCin(bigInt, &temp, bigInt, 1);
 
 	freeInt(&temp);
+
+	return bigInt;
 }
 
-void decrementar1(big_int *bigInt) {
+big_int * decrementar1(big_int *bigInt) {
 	big_int temp;
 
-	if (eZero(bigInt)) {
+	/*if (eZero(bigInt)) {
 		fprintf(stderr, "Não é permitido negativos\n");
 		exit(EXIT_FAILURE);
-	}
+	}*/
 
 	inicializar(&temp, bigInt->nmemb);
 	
@@ -122,6 +122,8 @@ void decrementar1(big_int *bigInt) {
 	subtrair(bigInt, &temp, bigInt);
 
 	freeInt(&temp);
+
+	return bigInt;
 }
 
 size_t checaTamanho(big_int *int1, big_int *int2, big_int *int3) {
@@ -148,43 +150,41 @@ bool eUm(big_int *bigInt) {
 	return true;
 }
 
-void inverter(big_int *bigInt) {
+big_int * inverter(big_int *bigInt) {
 	for (size_t i = 0; i < bigInt->nmemb; i++) {
 		bigInt->array[i] = ~bigInt->array[i];
 	}
+
+	return bigInt;
 }
 
-void complemento2(big_int *bigInt) {
+big_int * complemento2(big_int *bigInt) {
 	inverter(bigInt);
 	incrementar1(bigInt);
+
+	return bigInt;
 }
 
-void somar(big_int *int1, big_int *int2, big_int *resultado) { // esquisito o comportamento do builtin. migrar para o mesmo algoritmo de big_int_ext da multiplicao
+big_int * somar(big_int *int1, big_int *int2, big_int *resultado) {
 	size_t tamanho;
 	int_usado *a, *b, *r, c_in;
-	big_int temp, tempA, tempB;
+	big_int tempResposta;
 	
 	tamanho = int1->nmemb;
-	//tamanho = checaTamanho(int1, int2, resultado);
 
-	inicializar(&temp, tamanho);
-	inicializar(&tempA, tamanho);
-	inicializar(&tempB, tamanho);
-
-	copiar(&tempA, int1);
-	copiar(&tempB, int2);
+	inicializar(&tempResposta, tamanho);
 	
-	a = tempA.array;
-	b = tempB.array;
-	r = temp.array;
+	a = int1->array;
+	b = int2->array;
+	r = tempResposta.array;
 	c_in = 0;
 	
 	for (size_t i = 0; i < tamanho; i++) {
-		if (__builtin_add_overflow(a[i], c_in, &a[i])) {
+		if (__builtin_add_overflow(a[i], c_in, &r[i])) {
 			c_in = 1;
 			r[i] = b[i];
 		} else {
-			if (__builtin_add_overflow(a[i], b[i], &r[i])) {
+			if (__builtin_add_overflow(r[i], b[i], &r[i])) {
 				c_in = 1;
 			} else {
 				c_in = 0;
@@ -192,24 +192,55 @@ void somar(big_int *int1, big_int *int2, big_int *resultado) { // esquisito o co
 		}
 
 	}
-	copiar(resultado, &temp);
-	freeInt(&temp);
-	freeInt(&tempA);
-	freeInt(&tempB);
+	copiar(resultado, &tempResposta);
+	freeInt(&tempResposta);
+
+	return resultado;
 }
 
-void subtrair(big_int *int1, big_int *int2, big_int *resultado) {
-	//checaTamanho(int1, int2, resultado);
+big_int * somarComCin(big_int *int1, big_int *int2, big_int *resultado, int_usado c_in) {
+	size_t tamanho;
+	int_usado *a, *b, *r;
+	big_int tempResposta;
+	
+	tamanho = int1->nmemb;
+
+	inicializar(&tempResposta, tamanho);
+	
+	a = int1->array;
+	b = int2->array;
+	r = tempResposta.array;
+	
+	for (size_t i = 0; i < tamanho; i++) {
+		if (__builtin_add_overflow(a[i], c_in, &r[i])) {
+			c_in = 1;
+			r[i] = b[i];
+		} else {
+			if (__builtin_add_overflow(r[i], b[i], &r[i])) {
+				c_in = 1;
+			} else {
+				c_in = 0;
+			}
+		}
+
+	}
+	copiar(resultado, &tempResposta);
+	freeInt(&tempResposta);
+
+	return resultado;
+}
+
+big_int * subtrair(big_int *int1, big_int *int2, big_int *resultado) {
 	big_int temp;
 
-	inicializar(&temp, int1->nmemb);
+	inicializar(&temp, int2->nmemb);
 	copiar(&temp, int2);
 
-	complemento2(&temp);
-
-	somar(int1, &temp, resultado);
+	somarComCin(int1, inverter(&temp), resultado, 1);
 
 	freeInt(&temp);
+
+	return resultado;
 }
 
 void multiplicarSomando(big_int *int1, big_int *int2, big_int *resultado) {
@@ -253,7 +284,7 @@ void multiplicarPalavra(big_int *int1, big_int *int2, big_int_ext *resultado, si
 	}
 }
 
-void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
+big_int * multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 	big_int_ext temp;
 	size_t tamanho;
 
@@ -262,12 +293,13 @@ void multiplicar(big_int *int1, big_int *int2, big_int *resultado) {
 	inicializarExt(&temp, tamanho);
 
 	for(size_t i = 0; i < tamanho; i++) {
-		//printf("i = %zu\n", i);
 		multiplicarPalavra(int1, int2, &temp, i);
 	}
 
 	copiarExt(resultado, &temp);
 	freeInt((big_int*)&temp);
+
+	return resultado;
 }
 
 void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
@@ -284,14 +316,12 @@ void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
 
 	dividendo = int1->array;
 
-
+	
 	for (size_t i = tamanho - 1;; i--) {
 		atribuirValor(dividendo[i], &temp, 0);
 
 		if (compara(&temp, int2) >= IGUAL) {  // Se for maior ou igual
-			shiftLeft(&tempResultado);
-
-			bsearchDiv(&temp, int2, &tempResultado, &respostaBsearch);
+			bsearchDiv(&temp, int2, shiftLeft(&tempResultado), &respostaBsearch);
 
 			subtrair(&temp, &respostaBsearch, &temp);
 		}
@@ -306,26 +336,26 @@ void dividir(big_int *int1, big_int *int2, big_int *resultado, big_int *resto) {
 }
 
 comparacao compara(big_int *int1, big_int *int2) {
-	for (size_t i = int1->nmemb - 1;; i--) {
-		if (int1->array[i] > int2->array[i]) {
+	for (size_t i = int1->nmemb; i > 0; i--) {
+		if (int1->array[i-1] > int2->array[i-1]) {
 			return MAIOR;
-		} else if (int1->array[i] < int2->array[i]) {
+		} else if (int1->array[i-1] < int2->array[i-1]) {
 			return MENOR;
 		}
-		if (i == 0) break;
 	}
 	return IGUAL;
 }
 
-void shiftLeft(big_int *bigInt) {
-	for(size_t i = bigInt->nmemb - 2;; i--) {
-		bigInt->array[i + 1] = bigInt->array[i];
-		if (i == 0) break;
+big_int * shiftLeft(big_int *bigInt) {
+	for(size_t i = bigInt->nmemb - 1; i > 0; i--) {
+		bigInt->array[i] = bigInt->array[i-1];
 	}
 	bigInt->array[0] = 0;
+
+	return bigInt;
 }
 
-void dobrar(big_int *bigInt) {
+big_int * dobrar(big_int *bigInt) {
 	int_usado ultimo, temp;
 
 	ultimo = 0;
@@ -334,19 +364,21 @@ void dobrar(big_int *bigInt) {
 		bigInt->array[i] = (bigInt->array[i] << 1) + ultimo;
 		ultimo = temp;
 	}
+
+	return bigInt;
 }
 
-void metade(big_int*bigInt) {
+big_int * metade(big_int*bigInt) {
 	int_usado primeiro, temp;
 
 	primeiro = 0;
-	for(size_t i = bigInt->nmemb - 1;; i--) {
-		temp = (bigInt->array[i] & 0x00000001) << 31;
-		bigInt->array[i] = (bigInt->array[i] >> 1) + primeiro;
+	for(size_t i = bigInt->nmemb; i > 0; i--) {
+		temp = (bigInt->array[i-1] & 0x00000001) << 31;
+		bigInt->array[i-1] = (bigInt->array[i-1] >> 1) + primeiro;
 		primeiro = temp;
-		if (i == 0) break;
 	}
 
+	return bigInt;
 }
 
 void bsearchDiv(big_int *target, big_int *divisor, big_int *index, big_int *resultado) {
