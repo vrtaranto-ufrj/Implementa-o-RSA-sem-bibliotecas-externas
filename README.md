@@ -1,4 +1,4 @@
-#Tarasnet
+##Implementa-o-RSA-sem-bibliotecas-externas
 Implementação do algoritmo RSA em C sem utilização de bibliotecas externas. Foi implementado a struct big_int que é responsável por armazenar os números inteiros de grande magnitude, e as funções de multiplicação, divisão, exponenciação e geração de chaves. O programa irá gerar um par de chaves pública e privada, e irá criptografar e descriptografar uma mensagem. Para utilizar essa bilbioteca, basta incluir o arquivo `rsa.h` no seu código que está na pasta `src/rsa`.
 
 ## Compilação
