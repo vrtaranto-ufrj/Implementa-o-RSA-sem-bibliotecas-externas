@@ -1,15 +1,17 @@
-SRC = $(DIRBIGINT)/bigint.c
+SRC = $(DIRBIGINT)/bigint.c $(DIRRSA)/rsa.c $(DIRMAIN)/main.c
 TESTSRC = $(DIRBIGINT)/test_bigint.c
 
 DIRBIGINT = ./src/bigint
+DIRRSA = ./src/rsa
+DIRMAIN = ./src/programa
 
 OBJ = $(SRC:.c=.o)
-BIN = bigint
+BIN = rsa
 TESTBIN = test_bigint
 
 CC = gcc
 CFLAGS = -I$(DIRBIGINT) -Wall -Wextra -Werror -O3
-CTESTFLAGS = -I$(DIRBIGINT) -Wall -Wextra -pg -O3
+CTESTFLAGS = -I$(DIRBIGINT) -Wall -Wextra -g -O3
 
 all: $(BIN)
 
@@ -22,7 +24,7 @@ $(BIN): $(OBJ)
 test: $(TESTBIN)
 
 a:
-	gcc -Wall -Wextra -pg -O3 ./src/bigint/bigint.c ./src/rsa/rsa.c ./src/rsa/test.c -o test
+	gcc -Wall -Wextra -g -O3 ./src/bigint/bigint.c ./src/rsa/rsa.c ./src/rsa/test.c -o test
 
 
 $(TESTBIN): $(TESTSRC) $(SRC)
@@ -33,4 +35,4 @@ profile: $(TESTBIN)
 	gprof $(TESTBIN) gmon.out > profile.txt
 
 clean:
-	rm -f $(BIN) $(TESTBIN) gmon.out profile.txt
+	rm -f $(BIN) $(TESTBIN) gmon.out profile.txt test
