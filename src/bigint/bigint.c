@@ -17,6 +17,8 @@ typedef struct {
 
 } big_int_ext;
 
+big_int_ext * normalizar(big_int_ext *n);
+
 void inicializar(big_int *bigInt, size_t nmemb) {
 	if (nmemb == 0) {
 		fprintf(stderr, "Tamanho deve ser maior que zero!\n");
@@ -617,4 +619,135 @@ big_int * downgrade(big_int *maior, big_int *menor) {
 	}
 
 	return menor;
+}
+
+big_int_ext * multiKaratsbaRec(big_int *int1, big_int *int2, big_int_ext * resultado) {
+	big_int xl, xr, yl, yr, a, b, c, d, auxiliar1, auxiliar2;
+	size_t novoTamanho, tamanho;
+
+	tamanho = int1->nmemb;
+	novoTamanho = int1->nmemb/2;
+	if (tamanho == 1) {
+		resultado->array[0] = (uint64_t)int1->array[0] * (uint64_t)int2->array[0];
+		return resultado;
+	}
+	
+
+	inicializar(&xl, novoTamanho);
+	inicializar(&xr, novoTamanho);
+	inicializar(&yl, novoTamanho);
+	inicializar(&yr, novoTamanho);
+
+	inicializar(&a, tamanho);
+	inicializar(&b, tamanho);
+	inicializar(&c, tamanho);
+	inicializar(&d, tamanho);
+
+	inicializar(&auxiliar1, tamanho);
+	inicializar(&auxiliar2, tamanho);
+
+	for (size_t i = 0; i < novoTamanho; i++) {
+		xr.array[i] = int1->array[i];
+	}
+
+	for (size_t i = 0; i < novoTamanho; i++) {
+		yr.array[i] = int2->array[i];
+	}
+
+	for (size_t i = 0; i < novoTamanho; i++) {
+		xl.array[i] = int1->array[i+novoTamanho];
+	}
+
+	for (size_t i = 0; i < novoTamanho; i++) {
+		yl.array[i] = int2->array[i+novoTamanho];
+	}
+
+	multiKaratsbaRec(&xl, &yl, &a);
+	normalizar(&a);
+
+	multiKaratsbaRec(&xr, &yr, &b);
+	normalizar(&b);
+
+	somar(&xl, &xr, &auxiliar1);
+	normalizar(&auxiliar1);
+
+	somar(&yl, &yr, &auxiliar2);
+	normalizar(&auxiliar2);
+
+	multiKaratsbaRec(&auxiliar1, &auxiliar2, &c);
+	normalizar(&c);
+
+	subtrair(subtrair(&c, &a, &d), &b, &d);
+
+	normalizar(&d);
+
+	somar(&a, &resultado, &resultado);
+	for(size_t i = 0; i < novoTamanho; i++) {
+		shiftLeft(&resultado);
+	}
+
+	somar(&a, &resultado, &resultado);
+	for(size_t i = 0; i < novoTamanho; i++) {
+		shiftLeft(&resultado);
+	}
+
+	somar(&b, &resultado, &resultado);
+
+	freeInt(&a);
+	freeInt(&b);
+	freeInt(&c);
+	freeInt(&d);
+	freeInt(&xl);
+	freeInt(&xr);
+	freeInt(&yl);
+	freeInt(&yr);
+	freeInt(&auxiliar1);
+	freeInt(&auxiliar2);
+	return resultado;
+}
+
+big_int * normalizar(big_int_ext *n, big_int *resultado) {
+	big_int_ext temp;
+	size_t tamanho;
+
+	tamanho = n->nmemb;
+
+	inicializar(&temp, tamanho);
+
+	for (size_t i = 0; i < tamanho/2; i++) {
+		temp.array[i+1] = n->array[i]; 
+	}
+
+	somar(n, &temp, n);
+
+	freeInt(&temp);
+
+	return n;	
+}
+
+
+big_int * multiKaratsba(big_int *int1, big_int *int2, big_int * resultado) {
+	big_int_ext int1_ext, int2_ext, resultado_ext;
+	size_t tamanho;
+
+	tamanho = int1->nmemb;
+
+	inicializarExt(&int1_ext, tamanho);
+	inicializarExt(&int2_ext, tamanho);
+	inicializarExt(&resultado_ext, tamanho);
+
+	for (size_t i = 0; i < tamanho; i++) {
+		int1_ext.array[i] = int1->array[i];
+		int2_ext.array[i] = int2->array[i];
+	}
+
+	multiKaratsbaRec(&int1_ext, &int2_ext, &resultado_ext);	
+
+	copiarExt(resultado, &resultado_ext);
+
+	freeInt((big_int*)&int1_ext);
+	freeInt((big_int*)&int2_ext);
+	freeInt((big_int*)&resultado_ext);
+
+	return resultado;
 }

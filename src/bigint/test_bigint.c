@@ -65,9 +65,10 @@ int main(void) {
 	//somar(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//subtrair(&inteiros[0], &inteiros[1], &inteiros[2]);
 	//multiplicar(&inteiros[0], &inteiros[1], &inteiros[2]);
-	divisao(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[3]);
+	//divisao(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[3]);
 	//bsearchDiv(&inteiros[0], &inteiros[1], &inteiros[2], &inteiros[0]);
 	//potencia(&inteiros[1], 3, &inteiros[2]);
+	multiKaratsba(&inteiros[0], &inteiros[1], &inteiros[2]);
 	
 	printf("resultado = ");
 	printIntHexa(&inteiros[2]);

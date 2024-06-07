@@ -51,3 +51,4 @@ void randInt(big_int *min, big_int *max, big_int *resposta);
 void generate_random_bytes(big_int *n);
 big_int * upgrade(big_int *menor, big_int *maior);
 big_int * downgrade(big_int *maior, big_int *menor);
+big_int * multiKaratsba(big_int *int1, big_int *int2, big_int * resultado);
