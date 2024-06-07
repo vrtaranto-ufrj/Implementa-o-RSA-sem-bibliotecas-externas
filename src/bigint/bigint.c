@@ -51,6 +51,8 @@ void inicializarExt(big_int_ext *bigInt, size_t nmemb) {
 
 void freeInt(big_int *bigInt) {
 	free(bigInt->array);
+	bigInt->array = NULL;  // Segurança adicional para evitar double-free
+    bigInt->nmemb = 0;
 }
 
 void atribuirValor(int_usado inteiro, big_int *bigInt, size_t pos) {

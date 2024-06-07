@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+#include <unistd.h>
 
 #define TAM_BLOCO_BITS 64
 #define TAM_BLOCO TAM_BLOCO_BITS / (sizeof(unsigned char) * 8)  // 64 bits -> 8 caracteres
@@ -23,6 +25,14 @@ typedef struct structpublicKey {
     big_int e;
     big_int n;
 } publicKey;
+
+typedef struct {
+    big_int *min;
+    big_int *max;
+    big_int *n;
+    bool found;
+    pthread_mutex_t *lock;
+} thread_data;
 
 void modinv(Rsa *rsa);
 void generatePrime(big_int *n);
@@ -101,6 +111,9 @@ Rsa * criarKeys(uint32_t numero_bits) {
     printf("phi = ");
     printIntHexa(&rsa->phi);
     printf("\n");
+
+    freeInt(&phi_p);
+    freeInt(&phi_q);
 
     return rsa;
 }
@@ -480,9 +493,44 @@ bool isPrime(big_int *n, int iteracoes) {
     return true;
 }
 
+void *generatePrimeThread(void *arg) {
+    thread_data *data = (thread_data *)arg;
+    big_int candidate;
+    inicializar(&candidate, data->n->nmemb);
+
+    while (true) {
+        // Gerar um número aleatório entre min e max
+        randInt(data->min, data->max, &candidate);
+        
+        // Checar se o número é primo
+        if (isPrime(&candidate, 20)) {
+            pthread_mutex_lock(data->lock);
+            if (!data->found) {
+                // Atribuir o valor encontrado a n
+                for (size_t i = 0; i < data->n->nmemb; i++) {
+                    data->n->array[i] = candidate.array[i];
+                }
+                data->found = true;
+            }
+            pthread_mutex_unlock(data->lock);
+            break;
+        }
+
+        // Verificar se outro thread já encontrou um primo
+        pthread_mutex_lock(data->lock);
+        if (data->found) {
+            pthread_mutex_unlock(data->lock);
+            break;
+        }
+        pthread_mutex_unlock(data->lock);
+    }
+
+    freeInt(&candidate);
+    return NULL;
+}
+
 void generatePrime(big_int *n) {
     big_int min, max;
-
     inicializar(&min, n->nmemb);
     inicializar(&max, n->nmemb);
 
@@ -491,11 +539,23 @@ void generatePrime(big_int *n) {
     for (size_t i = 0; i < n->nmemb/2-1; i++) {
         atribuirValor(0xffffffff, &max, i);
     }
-    
-    do {
-        randInt(&min, &max, n);
-    } while (!isPrime(n, 20));
 
+    int num_threads = sysconf(_SC_NPROCESSORS_ONLN);
+    pthread_t threads[num_threads];
+    pthread_mutex_t lock;
+    pthread_mutex_init(&lock, NULL);
+
+    thread_data data = { &min, &max, n, false, &lock };
+
+    for (int i = 0; i < num_threads; i++) {
+        pthread_create(&threads[i], NULL, generatePrimeThread, (void *)&data);
+    }
+
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    pthread_mutex_destroy(&lock);
     freeInt(&min);
     freeInt(&max);
 }

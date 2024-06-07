@@ -46,13 +46,14 @@ int main(int argc, char const *argv[]) {
     decriptado = decrypt(cifrado, rsa);
 
     printf("D = 0x");
-    for (size_t i = 0; i < 8; i++)
+    for (size_t i = 0; i < strlen((char*)decriptado); i++)
         printf("%02x", decriptado[i]);
     printf("\n");
     printf("descriptografado = %s\n", decriptado);
 
     free(decriptado);
     free(cifrado);
+    free(mensagem);
 
     freePubKey(pubKey);
     freeRsa(rsa);
